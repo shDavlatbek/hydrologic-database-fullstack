@@ -4,16 +4,19 @@
   <div class="page-body">
     <div class="container-xl">
       <div class="card">
-        <div class="card-body">
-          <div class="row g-3 mb-3 align-items-center">
-            <div class="col-auto ms-auto">
-              <label for="geo-search" class="col-form-label">Qidiruv</label>
-            </div>
-            <div class="col-auto">
-              <input type="text" v-model="searchQuery" @input="updateSearch" id="geo-search" class="form-control form-control-sm">
+        <div class="card-body border-bottom py-3">
+          <div class="d-flex">
+            <div class="ms-auto row">
+              <div class="col-auto">
+                <label for="geo-search" class="col-form-label p-0">Qidiruv</label>
+              </div>
+              <div class="col-auto">
+                <input type="text" v-model="searchQuery" @input="updateSearch" id="geo-search" class="form-control form-control-sm">
+              </div>
             </div>
           </div>
-          <div id="table-geo" class="table-responsive">
+        </div>
+        <div id="table-geo" class="table-responsive">
             <table class="table">
               <thead>
                 <tr>
@@ -47,7 +50,6 @@
               </tbody>
             </table>
           </div>
-        </div>
       </div>
     </div>
   </div>
