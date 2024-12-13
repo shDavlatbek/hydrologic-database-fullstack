@@ -65,12 +65,12 @@
         </div>
       </div>
       <div class="row row-cards">
-        <div class="col-12 col-lg-6">
+        <div class="col-12 ">
           <div class="card">
             <div class="card-body">
               <div class="d-flex">
-                <h3 class="card-title">Social referrals</h3>
-                <div class="ms-auto">
+                <h3 class="card-title">Yer osti suvi sathi & Bashorat</h3>
+                <!-- <div class="ms-auto">
                   <div class="dropdown">
                     <a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Last 7 days</a>
                     <div class="dropdown-menu dropdown-menu-end">
@@ -79,30 +79,7 @@
                       <a class="dropdown-item" href="#">Last 3 months</a>
                     </div>
                   </div>
-                </div>
-              </div>
-              <apexchart height="350" type="line" 
-                :options="gwlChartOptions" 
-                :series="gwlChartSeries"
-              ></apexchart>
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-lg-6">
-          <div class="card">
-            <div class="card-body">
-              <div class="d-flex">
-                <h3 class="card-title">Social referrals</h3>
-                <div class="ms-auto">
-                  <div class="dropdown">
-                    <a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Last 7 days</a>
-                    <div class="dropdown-menu dropdown-menu-end">
-                      <a class="dropdown-item active" href="#">Last 7 days</a>
-                      <a class="dropdown-item" href="#">Last 30 days</a>
-                      <a class="dropdown-item" href="#">Last 3 months</a>
-                    </div>
-                  </div>
-                </div>
+                </div> -->
               </div>
               <apexchart height="350" type="line" 
                 :options="gwlChartOptions" 
@@ -113,6 +90,23 @@
         </div>
         <div class="col">
           <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Parameterlar</h3>
+              <div class="ms-auto">
+                <button class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal"
+                  :data-bs-target="'#'+modalId"
+                  @click="onModalOpen">
+                  <IconPlus class="icon" stroke="2" />
+                  Qo'shish
+                </button>
+                <button class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal" 
+                  :data-bs-target="'#'+modalId"
+                  aria-label="Qo'shish"
+                  @click="onModalOpen">
+                  <IconPlus class="icon" stroke="2" />
+                </button>
+              </div>
+            </div>
             <div class="table-responsive">
               <table class="table table-vcenter card-table table-bordered">
                 <thead>
@@ -156,7 +150,7 @@
 import { getWell, getParameterNames, getParameter } from '@/api/geo';
 import { ref } from 'vue';
 import { format } from 'date-fns';
-import { IconPencil } from '@tabler/icons-vue'
+import { IconPencil, IconPlus } from '@tabler/icons-vue'
 
 // let table = new DataTable('#datatable', {
 //     perPageSelect: [5, 10, 15, ["All", -1]],
@@ -188,21 +182,26 @@ export default {
     parameters: [],
     gwlChartOptions: {
       chart: {
-        type: 'line'
+        type: 'area'
       },
       xaxis: {
-        categories: ['1991-01-01', 1992, 1993, 1994, 1995, 1996, 1997, 1998],
-        type: 'datetime',
+        categories: [],
+      },
+      forecastDataPoints: {
+        count: 1,
+        fillOpacity: 0.5,
+        strokeWidth: undefined,
+        dashArray: 10,
       }
     },
     gwlChartSeries: [{
       name: 'series-1',
-      data: [30, 40, 45, 50, 49, 60, 70, 91]
+      data: []
     }]
   }),
 
   components: {
-    IconPencil
+    IconPencil, IconPlus
   },
 
   setup() {
@@ -238,15 +237,23 @@ export default {
 
   methods:{
     setGwlOptionsSeries(parameters){
-      const grouped = {};
+      const dates = [];
+      const params = [];
       for (const param of parameters) {
         const date = param.date.split("T")[0]; 
-        if (!grouped[date]) {
-          grouped[date] = {};
+        if (!dates.includes(date)) {
+          dates.push(new Date(date).getTime());
         }
-        grouped[date][param.parameter_name] = param.value;
+        if (param.parameter_name == 1) {
+          params.push(param.value)
+        }
       }
-      return grouped;
+      console.log(dates);
+      console.log(params);
+      this.gwlChartSeries[0].data = params
+      this.gwlChartOptions.xaxis.dates = dates
+      console.log(this.gwlChartSeries[0].data);
+      console.log(this.gwlChartOptions.xaxis.dates);
     }
   },
 
