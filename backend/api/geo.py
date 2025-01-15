@@ -3,9 +3,11 @@ from fastapi import APIRouter, Depends, Query
 from api.auth import fastapi_users
 
 from api.dependencies import UOWDep
+from prediction.predictor import predict
 from services.geo import GeoService, ParameterService
 from schemas.geo import AddGeoWell, Parameter, ParameterQuery, ParameterAdd
 from typing import Annotated, Optional
+from dateutil.relativedelta import relativedelta
 
 
 router = APIRouter(
@@ -39,7 +41,7 @@ async def get_wells(
     res = []
     wells = await GeoService().get_wells(uow)
     for well in wells:
-        res.append(await GeoService().get_well(uow, well.id))
+        res.append(await GeoService().get_well(uow, well.number))
     return res
 
 
@@ -50,8 +52,27 @@ async def  get_parameters(
     user=Depends(fastapi_users.current_user(active=True))
 ):
     filters = filters.model_dump(exclude_none=True)
-    print(filters)
     return await ParameterService().get_parameters(uow, filters)
+
+
+@router.get("/parameter/predict")
+async def get_predict(
+    uow: UOWDep,
+    well_number: int,
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    
+    dates, gwl, rain, mint, maxt, avgt = await ParameterService().predict_parameters(uow, well_number)
+    predictions = predict(
+        dates,
+        well_number,
+        gwl, 
+        rain, 
+        mint, 
+        maxt, 
+        avgt
+    )
+    return {'dates': dates[12:], 'predictions': predictions}
 
 
 @router.post("/parameter/add")
@@ -74,10 +95,20 @@ async def  edit_parameter(
     return {"ok": True}
 
 
-@router.get("/{id}")
+@router.get("/{number}")
 async def get_well(
     uow: UOWDep,
-    id: int,
+    number: int,
     user=Depends(fastapi_users.current_user(active=True))
 ):
-    return await GeoService().get_well(uow, id)
+    return await GeoService().get_well(uow, number)
+
+
+@router.get("/{number}/edit")
+async def get_well_edit(
+    uow: UOWDep,
+    number: int,
+    geo_well: AddGeoWell,
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    return await GeoService().get_well_edit(uow, number, geo_well)
