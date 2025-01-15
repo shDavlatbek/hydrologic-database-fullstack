@@ -104,11 +104,11 @@ async def get_well(
     return await GeoService().get_well(uow, number)
 
 
-@router.get("/{number}/edit")
-async def get_well_edit(
+@router.post("/{number}/edit")
+async def edit_well(
     uow: UOWDep,
     number: int,
     geo_well: AddGeoWell,
     user=Depends(fastapi_users.current_user(active=True))
 ):
-    return await GeoService().get_well_edit(uow, number, geo_well)
+    return await GeoService().edit_well(uow, number, geo_well)

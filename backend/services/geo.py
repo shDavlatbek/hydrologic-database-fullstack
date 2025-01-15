@@ -44,10 +44,10 @@ class GeoService:
             else:
                 return None
     
-    async def edit_well(self, uow: IUnitOfWork, well_id: int, well: AddGeoWell):
+    async def edit_well(self, uow: IUnitOfWork, well_number: int, well: AddGeoWell):
         well_dict = well.model_dump()
         async with uow:
-            await uow.geo_well.edit_one(well_id, well_dict)
+            await uow.geo_well.edit_one(well_dict, number=well_number)
             await uow.commit()
             
             
