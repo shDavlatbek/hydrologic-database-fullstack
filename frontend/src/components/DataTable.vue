@@ -1,4 +1,3 @@
-// DataTable.vue
 <template>
   
   <div class="card"> 
@@ -8,15 +7,15 @@
           <div class="text-secondary">
             <div class="mx-2 d-inline-block">
               <select v-model="perPage" class="form-control form-control-sm">
-                <option :value="5">5 ta</option>
-                <option :value="10">10 ta</option>
-                <option :value="20">20 ta</option>
+                <option :value="5">{{ text.perPageText.replace('$perPage', 5) }}</option>
+                <option :value="10">{{ text.perPageText.replace('$perPage', 10) }}</option>
+                <option :value="20">{{ text.perPageText.replace('$perPage', 20) }}</option>
               </select>
             </div>
-            ma'lumotlar sahifasida
+            {{ text.perPageOptionText.replace('$perPage', perPage) }}
           </div>
           <div class="ms-auto text-secondary">
-            Qidiruv:
+            {{ text.search }}
             <div class="ms-2 d-inline-block">
               <input
                 v-model="searchQuery"
@@ -47,7 +46,7 @@
         </thead>
         <tbody>
           <template v-if="paginatedData.length">
-            <tr v-for="(item, index) in paginatedData" :key="index" :class="{'table-row': onRowClick}" @click="onRowClick(item)">
+            <tr v-for="(item, index) in paginatedData" :key="index" :class="{'table-row': onRowClick}" @click="onRowClick && onRowClick(item)">
               <td
                 v-for="column in columns"
               :key="column.key"
@@ -73,9 +72,12 @@
     </div>
     <div class="card-footer d-flex align-items-center">
       <p class="m-0 text-secondary">
-        <span>{{ filteredData.length }}</span> ta ma'lumotdan 
-        <span>{{ (currentPage - 1) * perPage + 1 }}</span> dan 
-        <span>{{ (currentPage - 1) * perPage + paginatedData.length }}</span> gacha ko'rsatilmoqda
+        {{ 
+          text.dataPerPage
+            .replace('$data', filteredData.length)
+            .replace('$from', (currentPage - 1) * perPage + 1)
+            .replace('$to', (currentPage - 1) * perPage + paginatedData.length) 
+        }}
       </p>
       <ul class="pagination m-0 ms-auto">
         <li class="page-item me-2" :class="{disabled: currentPage === 1}">
@@ -84,7 +86,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
               <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l-6 6l6 6" />
             </svg>
-            Oldingi
+            {{ text.previous }}
           </span>
         </li>
 
@@ -114,7 +116,7 @@
 
         <li class="page-item ms-2" :class="{disabled: currentPage === totalPages || totalPages === 0}">
           <span class="page-link" tabindex="-1" aria-disabled="true" @click="changePage(currentPage + 1)">
-            Keyingi
+            {{ text.next }}
             <!-- Right Arrow -->
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
               <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" />
@@ -155,7 +157,7 @@ export default {
       type: String,
       required: false,
       default: 'Bunday ma\'lumotlar topilmadi'
-    }
+    },
   },
   data() {
     return {
@@ -165,12 +167,22 @@ export default {
       currentPage: 1,
       perPage: 10,
       filteredData: [],
+      text: {
+        first: 'chi bo\'lib',
+        second: 'chidan',
+        previous: 'Oldingi',
+        next: 'Keyingi',
+        perPageOptionText: '$perPage ma\'lumotlar sahifasida',
+        perPageText: '$perPage ta',
+        search: 'Qidiruv:',
+        noData: 'Ma\'lumotlar topilmadi',
+        noSearchResults: 'Bunday ma\'lumotlar topilmadi',
+        dataPerPage: '$data ta ma\'lumotdan $from dan $to gacha ko\'rsatilmoqda',
+      }
     }
   },
   computed: {
     totalPages() {
-      console.log(Math.ceil(this.filteredData.length / this.perPage));
-      
       return Math.ceil(this.filteredData.length / this.perPage)
     },
     paginatedData() {
