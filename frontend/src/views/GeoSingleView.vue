@@ -122,25 +122,8 @@
                 </button>
               </div>
             </div>
-            <div class="table-responsive">
-              <table class="table table-vcenter card-table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Sana</th>
-                    <th v-for="pn in parameter_names" :key="pn.id">{{ pn.name }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(params, date) in dataByDate" :key="date">
-                    <td>{{ date }}</td>
-                    <td v-for="pn in parameter_names" :key="pn.id">
-                      {{ params[pn.id] !== undefined ? params[pn.id] : '' }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
           </div>
+          <DataTable :data="params" :columns="param_names" />
         </div>
         
       </div>
@@ -178,9 +161,13 @@ import { ref } from 'vue';
 import { format } from 'date-fns';
 import { IconPencil, IconPlus } from '@tabler/icons-vue'
 import ModalForm from '@/components/ModalFormComponent.vue';
+import DataTable from '@/components/DataTable.vue';
 const uz = require('../plugins/apexchartUzLocale.json')
 
 export default {
+  components: {
+    IconPencil, IconPlus, ModalForm, DataTable
+  },
   data: () => ({
     well: null,
     modalTitle: '',
@@ -197,9 +184,6 @@ export default {
     addParameterModalId: 'add-parameter'
   }),
 
-  components: {
-    IconPencil, IconPlus, ModalForm
-  },
 
   setup() {
     const modalAlert = ref();
@@ -211,82 +195,101 @@ export default {
     format() {
       return format;
     },
-    dataByDate() {
+    param_names() {
+      let names = this.parameter_names.map(pn => ({
+        key: pn.id,
+        label: pn.name
+      }));
+      names.unshift({
+        key: 'date',
+        label: 'Sana'
+      });
+      return names;
+    },
+    params() {
       const grouped = {};
       for (const param of this.parameters) {
-        const date = param.date.split("T")[0]; 
+        const dateParts = param.date.split("T")[0].split("-");
+        const date = `${dateParts[0]}/${dateParts[1]}`; // YYYY/MM format
         if (!grouped[date]) {
           grouped[date] = {};
         }
         grouped[date][param.parameter_name] = param.value;
       }
-      return grouped;
+
+      const params = [];
+      for (const date in grouped) {
+        params.push({
+          date: date,
+          ...grouped[date]
+        });
+      }
+      return params;
     },
     gwlChartOptions() {
-  return {
-      chart: {
-        type: "area",
-        locales: [uz],
-        defaultLocale: 'uz'
-      },
-      stroke: {
-              curve: 'straight'
-            },
-      legend: {
-        horizontalAlign: 'left'
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      markers: {
-        size: 0,
-        style: "hollow",
-      },
-      xaxis: {
-        type: "datetime",
-        // min: new Date("01 Mar 2012").getTime(),
-        categories: this.gwlChartDates, // Reactive data for x-axis
-      },
-      tooltip: {
-        x: {
-          format: "dd MMM yyyy",
+      return {
+        chart: {
+          type: "area",
+          locales: [uz],
+          defaultLocale: 'uz'
         },
-      },
-      };
-},
-gwlChartForecastOptions() {
-  return {
-      chart: {
-        type: "area",
-        locales: [uz],
-        defaultLocale: 'uz'
-      },
-      stroke: {
-              curve: 'straight'
-            },
-      legend: {
-        horizontalAlign: 'left'
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      markers: {
-        size: 0,
-        style: "hollow",
-      },
-      xaxis: {
-        type: "datetime",
-        // min: new Date("01 Mar 2012").getTime(),
-        categories: this.gwlChartSeriesForecastDates, // Reactive data for x-axis
-      },
-      tooltip: {
-        x: {
-          format: "yyyy/MM",
+        stroke: {
+          curve: 'straight'
         },
-      },
+        legend: {
+          horizontalAlign: 'left'
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        markers: {
+          size: 0,
+          style: "hollow",
+        },
+        xaxis: {
+          type: "datetime",
+          // min: new Date("01 Mar 2012").getTime(),
+          categories: this.gwlChartDates, // Reactive data for x-axis
+        },
+        tooltip: {
+          x: {
+            format: "dd MMM yyyy",
+          },
+        },
       };
-},
-
+    },
+    gwlChartForecastOptions() {
+      return {
+        chart: {
+          type: "area",
+          locales: [uz],
+          defaultLocale: 'uz'
+        },
+        stroke: {
+          curve: 'straight'
+        },
+        legend: {
+          horizontalAlign: 'left'
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        markers: {
+          size: 0,
+          style: "hollow",
+        },
+        xaxis: {
+          type: "datetime",
+          // min: new Date("01 Mar 2012").getTime(),
+          categories: this.gwlChartSeriesForecastDates, // Reactive data for x-axis
+        },
+        tooltip: {
+          x: {
+            format: "yyyy/MM",
+          },
+        },
+      };
+    },
   },
 
   methods:{
@@ -302,20 +305,15 @@ gwlChartForecastOptions() {
           params.push(param.value)
         }
       }
-      console.log(dates);
-      console.log(params);
       this.gwlChartSeries.push({
         name: 'GWL (M)',
         data: params
       })
       this.gwlChartDates = dates
-      console.log(this.gwlChartSeries[0].data);
-      console.log(this.gwlChartOptions.xaxis.categories);
     },
     setGwlForecastOptionsSeries(predictions){
       const params = [];
       predictions.predictions.forEach((prediction) => {
-        // округляем до 2 знаков после запятой
         params.push(Math.round(prediction * 100) / 100)
       })
       this.gwlChartSeriesForecast.push({
@@ -334,8 +332,7 @@ gwlChartForecastOptions() {
         this.parameter_names = await getParameterNames();
         this.parameters = await getParameter(wellNumber);
         this.setGwlOptionsSeries(this.parameters);
-        const predictions = await getPredictions(wellNumber);
-        this.setGwlForecastOptionsSeries(predictions);
+        this.setGwlForecastOptionsSeries(await getPredictions(wellNumber));
       } catch (error) {
         console.error('Error fetching well data:', error);
         this.modalAlert.openModal();
