@@ -1,0 +1,55 @@
+{
+  "name": "uz",
+  "options": {
+    "months": [
+      "Yanvar",
+      "Fevral",
+      "Mart",
+      "Aprel",
+      "May",
+      "Iyun",
+      "Iyul",
+      "Avgust",
+      "Sentabr",
+      "Oktabr",
+      "Noyabr",
+      "Dekabr"
+    ],
+    "shortMonths": [
+      "Yan",
+      "Fev",
+      "Mar",
+      "Apr",
+      "May",
+      "Iyun",
+      "Iyul",
+      "Avg",
+      "Sen",
+      "Okt",
+      "Noy",
+      "Dek"
+    ],
+    "days": [
+      "Yakshanba",
+      "Dushanba",
+      "Seshanba",
+      "Chorshanba",
+      "Payshanba",
+      "Juma",
+      "Shanba"
+    ],
+    "shortDays": ["Yak", "Du", "Se", "Chor", "Pay", "Ju", "Shan"],
+    "toolbar": {
+      "exportToSVG": "SVG ni yuklab olish",
+      "exportToPNG": "PNG ni yuklab olish",
+      "exportToCSV": "CSV ni yuklab olish",
+      "menu": "Menyu",
+      "selection": "Tanlash",
+      "selectionZoom": "Tanlashni kattalashtirish",
+      "zoomIn": "Kattalashtirish",
+      "zoomOut": "Kichraytirish",
+      "pan": "Ko'chirish",
+      "reset": "Zoomni tiklash"
+    }
+  }
+}
