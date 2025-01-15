@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Type
 
 from db.db import async_session_maker
-from repositories.common import RegionRepository, DistrictRepository, LocationRepository, CoordinateRepository
+from repositories.common import RegionRepository, DistrictRepository, LocationRepository
 from repositories.geo import \
     GeoStationRepository, GeoWellRepository, \
     GeoOrganizationRepository, GeoWellTypeRepository, \
@@ -13,7 +13,6 @@ from repositories.geo import \
 class IUnitOfWork(ABC):
     regions: Type[RegionRepository]
     districts: Type[DistrictRepository]
-    coordinate: Type[CoordinateRepository]
     location: Type[LocationRepository]
     
     # Geo
@@ -53,7 +52,6 @@ class UnitOfWork:
         self.session = self.session_factory()
         self.regions = RegionRepository(self.session)
         self.districts = DistrictRepository(self.session)
-        self.coordinate = CoordinateRepository(self.session)
         self.location = LocationRepository(self.session)
         
         # Geo

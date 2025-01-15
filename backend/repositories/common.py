@@ -1,4 +1,4 @@
-from models.common import Region, District, Location, Coordinate
+from models.common import Region, District, Location
 from utils.repository import SQLAlchemyRepository
 
 
@@ -12,7 +12,3 @@ class DistrictRepository(SQLAlchemyRepository):
 
 class LocationRepository(SQLAlchemyRepository):
     model = Location
-    
-
-class CoordinateRepository(SQLAlchemyRepository):
-    model = Coordinate

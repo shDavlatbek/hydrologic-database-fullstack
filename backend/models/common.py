@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.db import Base
-from schemas.common import NameField, Region, District, Coordinate
+from schemas.common import NameField, Region, District
 
 
 class Region(Base):
@@ -22,16 +22,3 @@ class Location(Base):
     __tablename__ = "location"
     pydantic_model = NameField
     name: Mapped[str] = mapped_column(String(length=150), nullable=False)
-
-
-class Coordinate(Base):
-    __tablename__ = "coordinate"
-    pydantic_model = Coordinate
-    latitude_degree: Mapped[float] = mapped_column(nullable=True)
-    latitude_minute: Mapped[float] = mapped_column(nullable=True)
-    latitude_second: Mapped[float] = mapped_column(nullable=True)
-    longitude_degree: Mapped[float] = mapped_column(nullable=True)
-    longitude_minute: Mapped[float] = mapped_column(nullable=True)
-    longitude_second: Mapped[float] = mapped_column(nullable=True)
-    x: Mapped[float] = mapped_column(nullable=True)
-    y: Mapped[float] = mapped_column(nullable=True)

@@ -28,14 +28,15 @@ class WellType(Base):
 class GeoWell(Base):
     __tablename__ = "geo_well"
     pydantic_model = GeoWell
-    number: Mapped[int] = mapped_column(nullable=False)
+    number: Mapped[int] = mapped_column(nullable=False, unique=True)
     region: Mapped[int] = mapped_column(ForeignKey('region.id'), nullable=True)
     district: Mapped[int] = mapped_column(ForeignKey('district.id'), nullable=True)
     organization: Mapped[int] = mapped_column(ForeignKey('geo_organization.id'), nullable=True)
     station: Mapped[int] = mapped_column(ForeignKey('geo_station.id'), nullable=True)
     location: Mapped[int] = mapped_column(ForeignKey('location.id'), nullable=True)
     well_type: Mapped[int] = mapped_column(ForeignKey('geo_welltype.id'), nullable=True)
-    coordinate: Mapped[int] = mapped_column(ForeignKey('coordinate.id', ondelete='CASCADE'), nullable=True)
+    x: Mapped[float] = mapped_column(nullable=True)
+    y: Mapped[float] = mapped_column(nullable=True)
     address: Mapped[str] = mapped_column(String(length=250), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
@@ -59,7 +60,7 @@ class ParameterName(Base):
 class Parameter(Base):
     __tablename__ = "parameter"
     pydantic_model = Parameter
-    well: Mapped[int] = mapped_column(ForeignKey('geo_well.id'), nullable=False)
+    well: Mapped[int] = mapped_column(ForeignKey('geo_well.number'), nullable=False)
     parameter_name: Mapped[int] = mapped_column(ForeignKey('parameter_name.id'), nullable=False)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     value: Mapped[float] = mapped_column(nullable=True)

@@ -29,24 +29,3 @@ class  NameField(BaseModel):
 
 class  NameFieldAdd(BaseModel):
     name: str
-
-
-class CoordinateAdd(BaseModel):
-    latitude_degree: Optional[float] = None
-    latitude_minute: Optional[float] = None
-    latitude_second: Optional[float] = None
-    longitude_degree: Optional[float] = None
-    longitude_minute: Optional[float] = None
-    longitude_second: Optional[float] = None
-    x: Optional[float] = None
-    y: Optional[float] = None
-    
-    class Config:
-        from_attributes = True
-        
-
-class Coordinate(CoordinateAdd):
-    id: int
-
-    class Config:
-        from_attributes = True
