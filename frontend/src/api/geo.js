@@ -8,6 +8,10 @@ export const addNewWell = async (data) => {
   return (await reqApi("/geo/add", data, "POST")).data;
 };
 
+export const editWell = async (number, data) => {
+  return (await reqApi(`/geo/${number}/edit`, data, "POST")).data;
+};
+
 export const getWells = async () => {
   return (await reqApi("/geo/")).data;
 };
