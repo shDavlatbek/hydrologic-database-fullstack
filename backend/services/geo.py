@@ -1,4 +1,6 @@
-from schemas.common import CoordinateAdd, NameFieldAdd
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from schemas.common import NameFieldAdd
 from schemas.geo import AddGeoWell, Parameter
 from utils.unitofwork import IUnitOfWork
 
@@ -20,18 +22,6 @@ class GeoService:
     async def add_well(self, uow: IUnitOfWork, well: AddGeoWell):
         well_dict = well.model_dump()
         async with uow:
-            coordinate = CoordinateAdd(
-                latitude_degree=well.coordinate.latitude_degree,
-                latitude_minute=well.coordinate.latitude_minute,
-                latitude_second=well.coordinate.latitude_second,
-                longitude_degree=well.coordinate.longitude_degree,
-                longitude_minute=well.coordinate.longitude_minute,
-                longitude_second=well.coordinate.longitude_second,
-                x=well.coordinate.x,
-                y=well.coordinate.y,
-            ).model_dump()
-            coordinate_id = await uow.coordinate.add_one(coordinate)
-            well_dict['coordinate'] = coordinate_id
             well_id = await uow.geo_well.add_one(well_dict)
             await uow.commit()
             return well_id
@@ -40,11 +30,10 @@ class GeoService:
         async with uow:
             return await uow.geo_well.find_all()
         
-    async def get_well(self, uow: IUnitOfWork, well_id: int):
+    async def get_well(self, uow: IUnitOfWork, well_number: int):
         async with uow:
-            well = await uow.geo_well.find_one(id=well_id)
+            well = await uow.geo_well.find_one(number=well_number)
             if well:
-                well.coordinate = await uow.coordinate.find_one(id=well.coordinate)
                 well.station = await uow.geo_station.find_one(id=well.station) if well.station else None
                 well.organization = await uow.geo_organization.find_one(id=well.organization) if well.organization else None
                 well.region = await uow.regions.find_one(id=well.region) if well.region else None
@@ -93,10 +82,43 @@ class ParameterService:
     async def get_parameters(self, uow: IUnitOfWork, filters):
         async with uow:
             if filters:
-                return await uow.parameter.find_all(**filters)
+                return await uow.parameter.find_all(filters=filters)
             else:
                 return await uow.parameter.find_all()
 
+    async def predict_parameters(
+        self, 
+        uow: IUnitOfWork, 
+        well_number: int,
+    ):
+        
+        # print(all_months)
+        async with uow:
+            end_date = (await uow.parameter.find_all(filters={'well': well_number}, order_by='date', order_desc=True, limit=1))[0].date
+            start_date = end_date - relativedelta(months=12)
+            dates = [
+                (start_date + relativedelta(months=i)).strftime("%Y/%m")
+                for i in range(1, (end_date + relativedelta(months=12) - start_date).days // 30 + 1)
+            ]
+            gwl = await uow.parameter.find_all(filters={'parameter_name': 1, 'well': well_number, 'date': (start_date+relativedelta(months=1), end_date+relativedelta(months=1))}, order_by='date', order_desc=False)
+            rainfall = await uow.parameter.find_all(filters={'parameter_name': 2, 'well': well_number, 'date': (start_date+relativedelta(months=1), end_date+relativedelta(months=1))}, order_by='date', order_desc=False)
+            mint = await uow.parameter.find_all(filters={'parameter_name': 3, 'well': well_number, 'date': (start_date+relativedelta(months=1), end_date+relativedelta(months=1))}, order_by='date', order_desc=False)
+            maxt = await uow.parameter.find_all(filters={'parameter_name': 4, 'well': well_number, 'date': (start_date+relativedelta(months=1), end_date+relativedelta(months=1))}, order_by='date', order_desc=False)
+            avgt = await uow.parameter.find_all(filters={'parameter_name': 5, 'well': well_number, 'date': (start_date+relativedelta(months=1), end_date+relativedelta(months=1))}, order_by='date', order_desc=False)
+            gwl_values = [item.value for item in gwl] + [0]*12
+            rainfall_values = [item.value for item in rainfall] + [0]*12
+            mint_values = [item.value for item in mint] + [0]*12
+            maxt_values = [item.value for item in maxt] + [0]*12
+            avgt_values = [item.value for item in avgt] + [0]*12
+            print(len(dates))
+            print(len(gwl_values), len(rainfall_values), len(mint_values), len(maxt_values), len(avgt_values), sep='\n')
+            print(dates)
+            print(gwl_values)
+            print(rainfall_values)
+            print(mint_values)
+            print(maxt_values)
+            print(avgt_values)
+            return dates, gwl_values, rainfall_values, mint_values, maxt_values, avgt_values
     
     async def edit_parameter(self, uow: IUnitOfWork, parameter_id: int, parameter: Parameter):
         parameter_dict = parameter.model_dump()
