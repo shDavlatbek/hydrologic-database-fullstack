@@ -232,7 +232,7 @@ export default {
         } catch (error) {
           console.log(error);
           this.modalTitle = "Ma'lumotlarni yuklashda xatolik yuzaga keldi";
-          this.dangerModal.openModal();
+          this.modalAlert.openModal();
           this.modalDesc = `Xato xabari: ${error.message}<br>Url: ${error.config.url}`;
           this.modalType = 'danger';
           this.modalOnCloseFunc = () => {};
