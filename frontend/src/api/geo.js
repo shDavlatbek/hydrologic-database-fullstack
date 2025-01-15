@@ -20,6 +20,10 @@ export const getParameterNames = async () => {
   return (await reqApi(`/parameter-names`)).data;
 };
 
-export const getParameter = async (well_id) => {
-  return (await reqApi(`/geo/parameter`, {well: well_id})).data;
+export const getParameter = async (well_number) => {
+  return (await reqApi(`/geo/parameter`, {well: well_number})).data;
+};
+
+export const getPredictions = async (well_number) => {
+  return (await reqApi(`/geo/parameter/predict`, {well_number: well_number})).data;
 };

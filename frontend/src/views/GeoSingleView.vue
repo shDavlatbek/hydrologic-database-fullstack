@@ -46,16 +46,8 @@
               <div class="datagrid-content">{{ well?.organization ?  well?.organization?.name : noInfoMes }}</div>
             </div>
             <div class="datagrid-item">
-              <div class="datagrid-title">Shimoliy kenglik</div>
-              <div class="datagrid-content">{{ latitude }}</div>
-            </div>
-            <div class="datagrid-item">
-              <div class="datagrid-title">Sharqiy kenglik</div>
-              <div class="datagrid-content">{{ longitude }}</div>
-            </div>
-            <div class="datagrid-item">
               <div class="datagrid-title">[X, Y]</div>
-              <div class="datagrid-content">{{ well?.coordinate?.x ? well?.coordinate?.x : noInfoMes }}:{{ well?.coordinate?.y ? well?.coordinate?.y : noInfoMes }}</div>
+              <div class="datagrid-content">{{ well?.x ? well?.x : noInfoMes }}, {{ well?.y ? well?.y : noInfoMes }}</div>
             </div>
             <div class="datagrid-item">
               <div class="datagrid-title">Qo'shilgan vaqti</div>
@@ -65,11 +57,11 @@
         </div>
       </div>
       <div class="row row-cards">
-        <div class="col-12 ">
+        <div class="col-12 col-md-6">
           <div class="card">
             <div class="card-body">
               <div class="d-flex">
-                <h3 class="card-title">Yer osti suvi sathi & Bashorat</h3>
+                <h3 class="card-title">Yer osti suvi sathi</h3>
                 <!-- <div class="ms-auto">
                   <div class="dropdown">
                     <a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Last 7 days</a>
@@ -81,9 +73,32 @@
                   </div>
                 </div> -->
               </div>
-              <apexchart height="350" type="line" 
+              <apexchart height="350" type="area" 
                 :options="gwlChartOptions" 
                 :series="gwlChartSeries"
+              ></apexchart>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex">
+                <h3 class="card-title">Bashorat</h3>
+                <!-- <div class="ms-auto">
+                  <div class="dropdown">
+                    <a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Last 7 days</a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                      <a class="dropdown-item active" href="#">Last 7 days</a>
+                      <a class="dropdown-item" href="#">Last 30 days</a>
+                      <a class="dropdown-item" href="#">Last 3 months</a>
+                    </div>
+                  </div>
+                </div> -->
+              </div>
+              <apexchart height="350" type="area" 
+                :options="gwlChartForecastOptions" 
+                :series="gwlChartSeriesForecast"
               ></apexchart>
             </div>
           </div>
@@ -94,13 +109,13 @@
               <h3 class="card-title">Parameterlar</h3>
               <div class="ms-auto">
                 <button class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal"
-                  :data-bs-target="'#'+modalId"
+                  :data-bs-target="'#'+addParameterModalId"
                   @click="onModalOpen">
                   <IconPlus class="icon" stroke="2" />
                   Qo'shish
                 </button>
                 <button class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal" 
-                  :data-bs-target="'#'+modalId"
+                  :data-bs-target="'#'+addParameterModalId"
                   aria-label="Qo'shish"
                   @click="onModalOpen">
                   <IconPlus class="icon" stroke="2" />
@@ -134,6 +149,17 @@
   </div>
 
   <teleport to="body">
+    <ModalForm :modal-id="addParameterModalId" modal-title="Parameterlar qo'shish" :modal-form-confirm="newParameterSubmit" ref="addParameterForm">
+      <template #modal-body>
+        <div class="modal-body">
+          <div class="row">
+          </div>
+        </div>
+      </template>
+    </ModalForm>
+  </teleport>
+
+  <teleport to="body">
     <ModalAlert :title="modalTitle" :description="modalDesc" ref="modalAlert" :type="modalType">
       <template #buttons>
         <div class="col">
@@ -147,28 +173,12 @@
 </template>
 
 <script>
-import { getWell, getParameterNames, getParameter } from '@/api/geo';
+import { getWell, getParameterNames, getParameter, getPredictions } from '@/api/geo';
 import { ref } from 'vue';
 import { format } from 'date-fns';
 import { IconPencil, IconPlus } from '@tabler/icons-vue'
-
-// let table = new DataTable('#datatable', {
-//     perPageSelect: [5, 10, 15, ["All", -1]],
-//     language: {
-//       "decimal":        "",
-//       "emptyTable":     "Mavjud emas",
-//       "info":           "_TOTAL_ ta yozuvdan _START_ dan _END_ gacha koʻrsatilmoqda",
-//       "infoFiltered":   "(filtered from _MAX_ total entries)",
-//       "infoPostFix":    "",
-//       "thousands":      ",",
-//       "lengthMenu":     "_MENU_ mehmon har bir sahifada",
-//       "loadingRecords": "Yuklanmoqda...",
-//       "processing":     "",
-//       "search":         "Qidiruv:",
-//       "zeroRecords":    "Mehmon topilmadi",
-
-//     }
-//   });
+import ModalForm from '@/components/ModalFormComponent.vue';
+const uz = require('../plugins/apexchartUzLocale.json')
 
 export default {
   data: () => ({
@@ -180,28 +190,15 @@ export default {
     modalOnCloseFunc: () => { },
     parameter_names: [],
     parameters: [],
-    gwlChartOptions: {
-      chart: {
-        type: 'area'
-      },
-      xaxis: {
-        categories: [],
-      },
-      forecastDataPoints: {
-        count: 1,
-        fillOpacity: 0.5,
-        strokeWidth: undefined,
-        dashArray: 10,
-      }
-    },
-    gwlChartSeries: [{
-      name: 'series-1',
-      data: []
-    }]
+    gwlChartDates: [],
+    gwlChartSeries: [],
+    gwlChartSeriesForecast: [],
+    gwlChartSeriesForecastDates: [],
+    addParameterModalId: 'add-parameter'
   }),
 
   components: {
-    IconPencil, IconPlus
+    IconPencil, IconPlus, ModalForm
   },
 
   setup() {
@@ -214,14 +211,6 @@ export default {
     format() {
       return format;
     },
-    longitude(){
-      const { longitude_degree, longitude_minute, longitude_second } = this.well?.coordinate ?? {};
-      return `${longitude_degree ?? ''}°${longitude_minute ?? ''}"${longitude_second ?? ''}'`;
-    },
-    latitude() {
-      const { latitude_degree, latitude_minute, latitude_second } = this.well?.coordinate ?? {};
-      return `${latitude_degree ?? ''}°${latitude_minute ?? ''}"${latitude_second ?? ''}'`;
-    },
     dataByDate() {
       const grouped = {};
       for (const param of this.parameters) {
@@ -232,7 +221,72 @@ export default {
         grouped[date][param.parameter_name] = param.value;
       }
       return grouped;
-    }
+    },
+    gwlChartOptions() {
+  return {
+      chart: {
+        type: "area",
+        locales: [uz],
+        defaultLocale: 'uz'
+      },
+      stroke: {
+              curve: 'straight'
+            },
+      legend: {
+        horizontalAlign: 'left'
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      markers: {
+        size: 0,
+        style: "hollow",
+      },
+      xaxis: {
+        type: "datetime",
+        // min: new Date("01 Mar 2012").getTime(),
+        categories: this.gwlChartDates, // Reactive data for x-axis
+      },
+      tooltip: {
+        x: {
+          format: "dd MMM yyyy",
+        },
+      },
+      };
+},
+gwlChartForecastOptions() {
+  return {
+      chart: {
+        type: "area",
+        locales: [uz],
+        defaultLocale: 'uz'
+      },
+      stroke: {
+              curve: 'straight'
+            },
+      legend: {
+        horizontalAlign: 'left'
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      markers: {
+        size: 0,
+        style: "hollow",
+      },
+      xaxis: {
+        type: "datetime",
+        // min: new Date("01 Mar 2012").getTime(),
+        categories: this.gwlChartSeriesForecastDates, // Reactive data for x-axis
+      },
+      tooltip: {
+        x: {
+          format: "yyyy/MM",
+        },
+      },
+      };
+},
+
   },
 
   methods:{
@@ -242,7 +296,7 @@ export default {
       for (const param of parameters) {
         const date = param.date.split("T")[0]; 
         if (!dates.includes(date)) {
-          dates.push(new Date(date).getTime());
+          dates.push(date);
         }
         if (param.parameter_name == 1) {
           params.push(param.value)
@@ -250,21 +304,38 @@ export default {
       }
       console.log(dates);
       console.log(params);
-      this.gwlChartSeries[0].data = params
-      this.gwlChartOptions.xaxis.dates = dates
+      this.gwlChartSeries.push({
+        name: 'GWL (M)',
+        data: params
+      })
+      this.gwlChartDates = dates
       console.log(this.gwlChartSeries[0].data);
-      console.log(this.gwlChartOptions.xaxis.dates);
+      console.log(this.gwlChartOptions.xaxis.categories);
+    },
+    setGwlForecastOptionsSeries(predictions){
+      const params = [];
+      predictions.predictions.forEach((prediction) => {
+        // округляем до 2 знаков после запятой
+        params.push(Math.round(prediction * 100) / 100)
+      })
+      this.gwlChartSeriesForecast.push({
+        name: 'GWL (M)',
+        data: params
+      })
+      this.gwlChartSeriesForecastDates = predictions.dates
     }
   },
 
   async mounted() {
-    const wellId = this.$route?.params?.id;
-    if (wellId) {
+    const wellNumber = this.$route?.params?.number;
+    if (wellNumber) {
       try {
-        this.well = await getWell(wellId);
+        this.well = await getWell(wellNumber);
         this.parameter_names = await getParameterNames();
-        this.parameters = await getParameter(wellId);
+        this.parameters = await getParameter(wellNumber);
         this.setGwlOptionsSeries(this.parameters);
+        const predictions = await getPredictions(wellNumber);
+        this.setGwlForecastOptionsSeries(predictions);
       } catch (error) {
         console.error('Error fetching well data:', error);
         this.modalAlert.openModal();
