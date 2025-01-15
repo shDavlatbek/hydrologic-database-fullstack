@@ -1,0 +1,7 @@
+[
+    {"id": 1, "name": "GWL (m)"},
+    {"id": 2, "name": "Rainfall mm"},
+    {"id": 3, "name": "Min air temp. C"},
+    {"id": 4, "name": "Max air temp. C"},
+    {"id": 5, "name": "Ave. air temp. C"}
+]
