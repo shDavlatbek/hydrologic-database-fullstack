@@ -8,7 +8,7 @@ const routes = [
   { path: "/", name: "HomeView", component: HomeView, meta: { auth: true, layout: 'main' } },
   { path: "/login", name: "Login", component: Login, meta: { auth: false, layout: 'empty' } },
   { path: "/geo", name: "Geo", component: () => import("../views/GeoView.vue"), meta: { auth: true, layout: 'main' } },
-  { path: "/geo/:id(\\d+)", name: "GeoSingle", component: () => import("../views/GeoSingleView.vue"), meta: { auth: true, layout: 'main' } },
+  { path: "/geo/:number(\\d+)", name: "GeoSingle", component: () => import("../views/GeoSingleView.vue"), meta: { auth: true, layout: 'main' } },
   { path: "/melio", name: "Melio", component: () => import("../views/MelioView.vue"), meta: { auth: true, layout: 'main' } },
   { path: "/meteo", name: "Meteo", component: () => import("../views/MeteoView.vue"), meta: { auth: true, layout: 'main' } },
   { path: "/500", component: ServerError },
