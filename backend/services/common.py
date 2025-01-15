@@ -14,4 +14,4 @@ class DistrictService:
         async with uow:
             if region_id is None:
                 return await uow.districts.find_all()
-            return await uow.districts.find_all(region_id=region_id)
+            return await uow.districts.find_all(filters={"region_id": region_id})
