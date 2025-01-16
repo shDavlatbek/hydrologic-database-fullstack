@@ -1,5 +1,6 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, Query
+import json
+from fastapi import APIRouter, Depends, Query, File, UploadFile
 from api.auth import fastapi_users
 
 from api.dependencies import UOWDep
@@ -102,6 +103,24 @@ async def get_well(
     user=Depends(fastapi_users.current_user(active=True))
 ):
     return await GeoService().get_well(uow, number)
+
+
+@router.post("/{number}/upload")
+async def upload_file(
+    uow: UOWDep,
+    number: int,
+    file: UploadFile = File(...),
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    from pandas import read_excel
+    df = read_excel(file.file)
+    return {
+        "filename": file.filename,
+        "df": df.to_json(orient='records'),
+        "content_type": file.content_type,
+        "file_size": len(await file.read()),  # Read the file content to determine the size
+    }
+
 
 
 @router.post("/{number}/edit")

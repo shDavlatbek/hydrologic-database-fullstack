@@ -7,8 +7,8 @@
             <h3 class="card-title">Quduq ma'lumotlari</h3>
             <div class="card-actions">
               <button class="btn btn-sm btn-primary rounded-2 px-2 py-1" href="#" v-if="!editMode" @click="editMode = true">
+                <IconPencil class="icon" stroke="2" />
                 Tahrirlash
-                <IconPencil class="icon ms-2" stroke="2" />
               </button>
             </div>
           </div>
@@ -132,16 +132,17 @@
           </div>
           <div class="card-footer d-flex" v-if="editMode">
             <button class="btn btn-sm btn-danger rounded-2 me-2 ms-auto px-2 py-1" @click="editMode = false; setWellForm(well)">
+              <IconX class="icon" stroke="2" />
               Bekor qilish
-              <IconX class="icon m-0 ms-2" stroke="2" />
             </button>
             <button class="btn btn-sm btn-success rounded-2 px-2 py-1" type="submit">
+              <IconCheck class="icon" stroke="2" />
               Saqlash
-              <IconCheck class="icon m-0 ms-2" stroke="2" />
             </button>
           </div>
         </form>
       </div>
+      <!-- GRAPHS -->
       <div class="row row-cards">
         <div class="col-12 col-md-6">
           <div class="card">
@@ -189,6 +190,7 @@
             </div>
           </div>
         </div>
+        <!-- PARAMETERS -->
         <div class="col">
           <div class="card">
             <div class="card-header">
@@ -218,12 +220,55 @@
   </div>
 
   <teleport to="body">
-    <ModalForm :modal-id="addParameterModalId" modal-title="Parameterlar qo'shish" :modal-form-confirm="newParameterSubmit" ref="addParameterForm">
+    <ModalForm :modal-id="addParameterModalId" class="modal-dialog-scrollable" modal-title="Parameterlar qo'shish" :modal-form-confirm="newParameterSubmit" ref="addParameterForm">
       <template #modal-body>
         <div class="modal-body">
           <div class="row">
+            <table class="table table-transparent table-responsive table-bordered">
+              <thead>
+                <tr>
+                  <th v-for="one in param_names.slice(0, -1)" :key="one.key">{{ one.label }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(one, index) in excelData" :key="index">
+                  <td v-for="key in Object.keys(one)" :key="key">{{ one[key] }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      </template>
+      <template #modal-footer-buttons>
+        
+        <div class="nav-item dropdown d-md-flex me-3">
+                <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" tabindex="-1" aria-label="Show notifications">
+                  <button class="btn btn-outline-success" type="button">
+                    <IconUpload class="icon" stroke="2" />
+                    Excel yuklash
+                  </button>
+                </a>
+                <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Excel yuklash</h3>
+                    </div>
+                    <div class="card-body">
+                      <input type="file" class="form-control" accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="excelUpload" />
+                    </div>
+                    <div class="card-body">
+                      <h3>Fayl shakli</h3>
+                      <table class="table table-transparent table-responsive table-bordered">
+                        <thead>
+                          <tr>
+                            <th v-for="one in param_names.slice(0, -1)" :key="one.key">{{ one.label }}</th>
+                          </tr>
+                        </thead>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
       </template>
     </ModalForm>
   </teleport>
@@ -242,19 +287,22 @@
 </template>
 
 <script>
-import { getWell, getParameterNames, getParameter, getPredictions, getNewWellForm, editWell } from '@/api/geo';
+import { getWell, getParameterNames, getParameter, getPredictions, getNewWellForm, editWell, uploadFile } from '@/api/geo';
 import { getRegions, getDistricts } from '@/api/common';
 import { ref } from 'vue';
 import { format } from 'date-fns';
-import { IconPencil, IconPlus, IconX, IconCheck } from '@tabler/icons-vue'
+import { IconPencil, IconPlus, IconX, IconCheck, IconUpload } from '@tabler/icons-vue'
 import ModalForm from '@/components/ModalFormComponent.vue';
 import ModalAlert from '@/components/ModalAlert.vue';
 import DataTable from '@/components/DataTable.vue';
+import DeleteParameterButton from '@/components/DeleteParameterButton.vue';
 const uz = require('../plugins/apexchartUzLocale.json')
 
 export default {
   components: {
-    IconPencil, IconPlus, IconX, IconCheck, ModalForm, DataTable, ModalAlert
+    // eslint-disable-next-line
+    DeleteParameterButton,
+    IconPencil, IconPlus, IconX, IconCheck, IconUpload, ModalForm, DataTable, ModalAlert, 
   },
   data: () => ({
     well: null,
@@ -290,6 +338,7 @@ export default {
     stations: [],
     regions: [],
     districts: [],
+    excelData: [],
   }),
 
 
@@ -312,6 +361,12 @@ export default {
         key: 'date',
         label: 'Sana'
       });
+      names.push({
+        key: 'delete',
+        label: '',
+        type: 'custom',
+        render: DeleteParameterButton
+      });
       return names;
     },
     params() {
@@ -329,7 +384,8 @@ export default {
       for (const date in grouped) {
         params.push({
           date: date,
-          ...grouped[date]
+          ...grouped[date],
+          delete: date
         });
       }
       return params;
@@ -469,6 +525,10 @@ export default {
         this.modalType = 'danger';
       }
       console.log(this.wellForm);
+    },
+    async excelUpload(event) {
+      const response = await uploadFile(this.wellNumber, event.target.files[0]);
+      this.excelData = JSON.parse(response.data.df);
     }
   },
 
@@ -507,5 +567,9 @@ export default {
     content: "*";
     margin-left: .25rem;
     color: #d63939;
+}
+.dropdown-menu{
+  -webkit-user-select: auto;
+  user-select: auto;
 }
 </style>

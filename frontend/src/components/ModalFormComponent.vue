@@ -1,5 +1,5 @@
 <template>
-  <div class="modal modal-blur fade" :id="modalId" tabindex="-1" role="dialog">
+  <div class="modal modal-blur fade" :id="modalId" tabindex="-1" role="dialog" data-bs-backdrop="static">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -12,7 +12,9 @@
             <button class="btn btn-link link-secondary" data-bs-dismiss="modal">
               Bekor qilish
             </button>
-            <input type="reset" class="btn ms-auto" value="Tozalash" />
+            <span class="ms-auto"></span>
+            <slot name="modal-footer-buttons"></slot>
+            <input type="reset" class="btn" value="Tozalash" />
             <button type="submit" class="btn btn-primary">
               <IconPlus class="icon" stroke="2" />
               Qo'shish

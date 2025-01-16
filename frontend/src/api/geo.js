@@ -1,4 +1,5 @@
 import { reqApi } from "./base";
+import { api } from ".";
 
 export const getNewWellForm = async () => {
   return (await reqApi("/geo/add")).data;
@@ -30,4 +31,21 @@ export const getParameter = async (well_number) => {
 
 export const getPredictions = async (well_number) => {
   return (await reqApi(`/geo/parameter/predict`, {well_number: well_number})).data;
+};
+
+export const uploadFile = async (well_number, file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const config = {
+    method: 'POST',
+    url: `/geo/${well_number}/upload`,
+    headers: { 'Content-Type': 'multipart/form-data' },
+    data: formData,
+    onUploadProgress: progressEvent => {
+      console.log("Upload Progress:", Math.round((progressEvent.loaded * 100) / progressEvent.total));
+    },
+  };
+
+  const response = await api.request(config);
+  return response;
 };
