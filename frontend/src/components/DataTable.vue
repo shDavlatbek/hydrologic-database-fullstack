@@ -49,9 +49,20 @@
             <tr v-for="(item, index) in paginatedData" :key="index" :class="{'table-row': onRowClick}" @click="onRowClick && onRowClick(item)">
               <td
                 v-for="column in columns"
-              :key="column.key"
-            >
-              {{ item[column.key] }}
+                :key="column.key"
+              >
+              <template v-if="item[column.key] !== undefined">
+                <template v-if="column.type === 'custom' && column.render">
+                  <component
+                    :is="column.render"
+                    :value="item[column.key]"
+                    :row="item"
+                  />
+                </template>
+                <template v-else>
+                  {{ item[column.key] }}
+                </template>
+              </template>
               </td>
             </tr>
           </template>
