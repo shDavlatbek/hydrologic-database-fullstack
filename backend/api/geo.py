@@ -46,6 +46,15 @@ async def get_wells(
     return res
 
 
+@router.get("/with_parameters")
+async def get_wells_with_parameters(
+    uow: UOWDep,
+    date: datetime,
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    return await GeoService().get_wells_with_parameters(uow, date)
+
+
 @router.get("/parameter")
 async def  get_parameters(
     uow: UOWDep,

@@ -30,6 +30,13 @@ class GeoService:
         async with uow:
             return await uow.geo_well.find_all()
         
+    async def get_wells_with_parameters(self, uow: IUnitOfWork, date: datetime):
+        async with uow:
+            wells = await uow.geo_well.find_all()
+            for well in wells:
+                well.parameters = await uow.parameter.find_all(filters={'well': well.number, 'date': date.isoformat()})
+            return wells
+    
     async def get_well(self, uow: IUnitOfWork, well_number: int):
         async with uow:
             well = await uow.geo_well.find_one(number=well_number)
@@ -110,14 +117,6 @@ class ParameterService:
             mint_values = [item.value for item in mint] + [0]*12
             maxt_values = [item.value for item in maxt] + [0]*12
             avgt_values = [item.value for item in avgt] + [0]*12
-            print(len(dates))
-            print(len(gwl_values), len(rainfall_values), len(mint_values), len(maxt_values), len(avgt_values), sep='\n')
-            print(dates)
-            print(gwl_values)
-            print(rainfall_values)
-            print(mint_values)
-            print(maxt_values)
-            print(avgt_values)
             return dates, gwl_values, rainfall_values, mint_values, maxt_values, avgt_values
     
     async def edit_parameter(self, uow: IUnitOfWork, parameter_id: int, parameter: Parameter):

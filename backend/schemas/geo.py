@@ -20,6 +20,12 @@ class GeoWell(AddGeoWell):
     id: int
     created_at: datetime
     updated_at: datetime
+    parameters: Optional[list['Parameter']] = None
+    def model_dump(self, **kwargs):
+        data = super().model_dump(**kwargs)
+        if not data.get("parameters"):  # Убираем поле, если оно None или []
+            data.pop("parameters", None)
+        return data
 
     class Config:
         from_attributes = True
