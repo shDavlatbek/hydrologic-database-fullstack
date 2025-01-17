@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 from sqlalchemy import asc, desc, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,7 +48,9 @@ class SQLAlchemyRepository(AbstractRepository):
         # Apply filters if provided
         if filters:
             for field, value in filters.items():
-                if isinstance(value, tuple) and len(value) == 2:  # Range filter
+                if isinstance(value, datetime):
+                    stmt = stmt.where(getattr(self.model, field) == value.isoformat())
+                elif isinstance(value, tuple) and len(value) == 2:  # Range filter
                     stmt = stmt.where(getattr(self.model, field).between(*value))
                 else:
                     stmt = stmt.where(getattr(self.model, field) == value)
