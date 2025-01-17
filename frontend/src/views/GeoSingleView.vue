@@ -220,7 +220,7 @@
   </div>
 
   <teleport to="body">
-    <ModalForm :modal-id="addParameterModalId" class="modal-dialog-scrollable" modal-title="Parameterlar qo'shish" :modal-form-confirm="newParameterSubmit" ref="addParameterForm">
+    <ModalForm :modal-id="addParameterModalId" modal-title="Parameterlar qo'shish" :modal-form-confirm="newParameterSubmit" ref="addParameterForm">
       <template #modal-body>
         <div class="modal-body">
           <div class="row">
