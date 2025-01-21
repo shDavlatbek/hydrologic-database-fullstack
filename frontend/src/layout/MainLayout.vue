@@ -2,7 +2,9 @@
     <div class="page">
         <HeaderComponent />
         <div class="page-wrapper">
-            <router-view />
+            <keep-alive>
+                <router-view />
+            </keep-alive>
         </div>
     </div>
 </template>

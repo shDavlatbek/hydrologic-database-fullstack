@@ -119,6 +119,12 @@ class ParameterService:
             avgt_values = [item.value for item in avgt] + [0]*12
             return dates, gwl_values, rainfall_values, mint_values, maxt_values, avgt_values
     
+    async def get_parameter_dates(self, uow: IUnitOfWork):
+        async with uow:
+            start_date = (await uow.parameter.find_all(order_by='date', order_desc=False, limit=1))[0].date
+            end_date = (await uow.parameter.find_all(order_by='date', order_desc=True, limit=1))[0].date
+            return {'start_date': start_date, 'end_date': end_date}
+            
     async def edit_parameter(self, uow: IUnitOfWork, parameter_id: int, parameter: Parameter):
         parameter_dict = parameter.model_dump()
         async with uow:

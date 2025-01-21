@@ -1,5 +1,7 @@
 <script setup>
-import { onMounted, ref, watch, defineProps, computed } from 'vue';
+import { onMounted, ref, watch, defineProps, 
+  // computed
+ } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import '../assets/js/leaflet-idw.js'
@@ -7,25 +9,29 @@ import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import 'leaflet.markercluster'
 import * as maptiler from '@maptiler/leaflet-maptilersdk'
+import { useRouter } from 'vue-router'
+
+// Get router instance
+const router = useRouter()
 
 const mapContainer = ref(null);
 let map;
 
 const props = defineProps({
-  stations: {
+  wells: {
     type: Array,
     required: true,
     default: () => []
   },
-  selectedHour: {
-    type: Number,
+  selectedDate: {
+    type: Date,
     required: false,
     default: () => {
       const now = new Date();
       now.setMinutes(0);
       now.setSeconds(0);
       now.setMilliseconds(0);
-      return now.getHours(); // Returns the current hour (0-23)
+      return now; // Returns the current hour (0-23)
     }
   },
   viewCoordinates: {
@@ -40,60 +46,67 @@ const props = defineProps({
   }
 });
 
-// const getAqiColor = (aqi) => {
-//   if (aqi <= 50) return '#00e400';
-//   if (aqi <= 100) return '#f7D543';
-//   if (aqi <= 150) return '#ff7e00';
-//   if (aqi <= 200) return '#E95F5E';
-//   if (aqi <= 300) return '#9168A1';
+const getColor = (val) => {
+  if (val === null || val === undefined) return '#808080'; // серый
+  if (val <= 1) return '#E3F2FD'; // светло-голубой
+  if (val <= 2) return '#BBDEFB';
+  if (val <= 3) return '#90CAF9';
+  if (val <= 4) return '#64B5F6';
+  if (val <= 5) return '#42A5F5';
+  if (val <= 6) return '#2196F3'; // базовый синий
+  if (val <= 7) return '#1E88E5';
+  if (val <= 8) return '#1976D2';
+  if (val <= 9) return '#1565C0';
+  return '#0D47A1'; // насыщенно-синий
+};
 
-//   return '#9D6878';
-// };
+const markers = L.markerClusterGroup();
 
-const utcRoundedTime = computed(() => {
-  const now = new Date();
-  return new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    props.selectedHour, // Keep hours
-    0,                 // Set minutes to 0
-    0,                 // Set seconds to 0
-    0                  // Set milliseconds to 0
-  );
-})
+// const utcRoundedTime = computed(() => {
+//   const now = new Date();
+//   return new Date(
+//     now.getFullYear(),
+//     now.getMonth(),
+//     now.getDate(),
+//     props.selectedDate, // Keep hours
+//     0,                 // Set minutes to 0
+//     0,                 // Set seconds to 0
+//     0                  // Set milliseconds to 0
+//   );
+// })
 
-function getCurTimeParameter(parameters) {
-  // Вычисляем текущее округленное время
-  if(typeof parameters !== 'object') return null;
-  const curTime = utcRoundedTime.value; // Если utcRoundedTime - это computed, нужно использовать .value
+// function getCurTimeParameter(parameters) {
+//   // Вычисляем текущее округленное время
+//   if(typeof parameters !== 'object') return null;
+//   const curTime = utcRoundedTime.value; // Если utcRoundedTime - это computed, нужно использовать .value
 
-  // Ищем параметр с совпадающим временем
-  const curTimeParameter = parameters.find((param) => {
-    const paramTime = new Date(param.datetime);
-    return paramTime.getTime() === curTime.getTime();
-  });
+//   // Ищем параметр с совпадающим временем
+//   const curTimeParameter = parameters.find((param) => {
+//     const paramTime = new Date(param.datetime);
+//     return paramTime.getTime() === curTime.getTime();
+//   });
 
-  return curTimeParameter;
-}
+//   return curTimeParameter;
+// }
 
 const updateMarkers = () => {
-  const markers = L.markerClusterGroup();
+  
   if (map) {
-    // Clear existing layers
-    map.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.Circle || layer instanceof L.markerClusterGroup) {
-        map.removeLayer(layer);
-      }
-    });
-    // Add station markers and circles
-    props.stations.forEach(station => {
-      // getAqiColor(station?.parameter[0]?.aqi)
-      // station?.parameter[0]?.aqi
+
+    markers.clearLayers();
+    props.wells.forEach(well => {
+      const gwl = well?.parameters?.find(param => param.parameter_name === 1).value
       const markerHtml = `
-          <div class="station-marker">
-            <span class="station-text">${station.number}</span>
-            <svg class="station-icon" xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="currentColor"  class="icon icon-tabler icons-tabler-filled icon-tabler-map-pin"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18.364 4.636a9 9 0 0 1 .203 12.519l-.203 .21l-4.243 4.242a3 3 0 0 1 -4.097 .135l-.144 -.135l-4.244 -4.243a9 9 0 0 1 12.728 -12.728zm-6.364 3.364a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" /></svg>
+          <div class="well-marker">
+            <span class="well-text" style="background: ${getColor(gwl)}; color: white;">
+              ${gwl ? gwl : 
+              `<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-question-mark">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M8 8a3.5 3 0 0 1 3.5 -3h1a3.5 3 0 0 1 3.5 3a3 3 0 0 1 -2 3a3 4 0 0 0 -2 4" /><path d="M12 19l0 .01" />
+              </svg>`
+              }
+            </span>
+            <svg class="well-icon" xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="currentColor"  class="icon icon-tabler icons-tabler-filled icon-tabler-map-pin"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18.364 4.636a9 9 0 0 1 .203 12.519l-.203 .21l-4.243 4.242a3 3 0 0 1 -4.097 .135l-.144 -.135l-4.244 -4.243a9 9 0 0 1 12.728 -12.728zm-6.364 3.364a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" /></svg>
           </div>
         `;
 
@@ -107,13 +120,25 @@ const updateMarkers = () => {
       // Add circle with opacity
 
 
-      const marker = L.marker([station.y, station.x], { icon })
+      const marker = L.marker([well.y, well.x], { icon })
         .bindPopup(`
-          <strong>${station?.number}</strong><br>
-          GWL (m): ${getCurTimeParameter(station?.parameters)?.aqi}
-        `)
-        // .addTo(map);
-        markers.addLayer(marker);
+          <strong>${well?.number}</strong><br>
+          GWL (m): ${gwl ? gwl : '?'}<br>
+          <a href="javascript:void(0)" class="well-link" data-well-number="${well.number}">Batafsil</a>
+        `);
+
+      // Add click handler after popup is created
+      marker.on('popupopen', () => {
+        const link = marker.getPopup().getElement().querySelector('.well-link');
+        if (link) {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            router.push({ name: 'GeoSingle', params: { number: link.dataset.wellNumber } });
+          });
+        }
+      });
+
+      markers.addLayer(marker);
 
 
     });
@@ -144,8 +169,8 @@ onMounted(() => {
   }
 });
 
-watch([() => props.stations, () => props.selectedHour], updateMarkers, { deep: true });
-// watch([() => props.stations], updateInterpolation, { deep: true });
+watch([() => props.wells, () => props.selectedDate], updateMarkers, { deep: true });
+// watch([() => props.wells], updateInterpolation, { deep: true });
 </script>
 
 <template>
@@ -208,7 +233,7 @@ watch([() => props.stations, () => props.selectedHour], updateMarkers, { deep: t
   background: linear-gradient(90deg, #555, #999, #555)
 }
 
-:deep(.station-marker) {
+:deep(.well-marker) {
   /* width: 10px;
   height: 10px; */
   /* border-radius: 50%; */
@@ -216,17 +241,20 @@ watch([() => props.stations, () => props.selectedHour], updateMarkers, { deep: t
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+  
 
   color: white;
   font-weight: bold;
   /* box-shadow: 0 2px 4px rgba(0,0,0,0.3); */
 }
 
-:deep(.station-text) {
+:deep(.well-text) {
   text-shadow: 1px 1px 2px black;
+  padding: 2px 5px;
+  border-radius: 5px;
 }
 
-:deep(.station-icon) {
+:deep(.well-icon) {
   -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, .7));
   filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, .7));
 }

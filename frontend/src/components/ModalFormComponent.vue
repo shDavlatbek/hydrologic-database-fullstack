@@ -1,13 +1,13 @@
 <template>
+  <form @submit.prevent="handleSubmit">
   <div class="modal modal-blur fade" :id="modalId" tabindex="-1" role="dialog" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" :class="{ 'modal-dialog-scrollable': scrollable }" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">{{ modalTitle }}</h5>
           <button type="button" class="btn-close" id="close-modal-form" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form @submit.prevent="handleSubmit">
-          <slot name="modal-body"></slot>
+        <slot name="modal-body"></slot>
           <div class="modal-footer">
             <button class="btn btn-link link-secondary" data-bs-dismiss="modal">
               Bekor qilish
@@ -20,10 +20,12 @@
               Qo'shish
             </button>
           </div>
-        </form>
+        
+          
       </div>
     </div>
   </div>
+  </form>
 </template>
 
 <script>
@@ -53,6 +55,10 @@ export default {
     modalFormConfirm: {
       type: Function,
       required: true
+    },
+    scrollable: {
+      type: Boolean,
+      default: false
     }
   },
   components: {

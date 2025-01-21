@@ -220,55 +220,53 @@
   </div>
 
   <teleport to="body">
-    <ModalForm :modal-id="addParameterModalId" modal-title="Parameterlar qo'shish" :modal-form-confirm="newParameterSubmit" ref="addParameterForm">
+    <ModalForm :modal-id="addParameterModalId" scrollable modal-title="Parameterlar qo'shish" :modal-form-confirm="newParameterSubmit" ref="addParameterForm">
       <template #modal-body>
-        <div class="modal-body">
+        <div class="modal-body p-0 px-2">
           <div class="row">
-            <table class="table table-transparent table-responsive table-bordered">
-              <thead>
+            <table class="table table-responsive table-bordered mb-0 pb-0">
+              <thead class="sticky-top">
                 <tr>
                   <th v-for="one in param_names.slice(0, -1)" :key="one.key">{{ one.label }}</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody v-if="!loading">
+                <tr v-for="index in emptyExcelCells" :key="index">
+                  <td v-for="one in param_names.slice(0, -1)" :key="one.key">
+                    <input type="text" class="form-control form-control-sm" v-model="one[key]" />
+                  </td>
+                </tr>
                 <tr v-for="(one, index) in excelData" :key="index">
-                  <td v-for="key in Object.keys(one)" :key="key">{{ one[key] }}</td>
+                  <td v-for="key in Object.keys(one)" :key="key">
+                    <input type="text" class="form-control form-control-sm" v-model="one[key]" />
+                  </td>
                 </tr>
               </tbody>
             </table>
+            <div class="d-flex justify-content-end align-items-center py-2">
+              <button class="btn btn-sm btn-primary rounded-2 px-2 py-1" type="button" @click="emptyExcelCells++">
+                <IconPlus class="icon" stroke="2" />
+                Bo'sh katak qo'shish
+              </button>
+            </div>
+            <div class="d-flex justify-content-center align-items-center py-5" v-if="loading">
+              <div class="loader-custom"></div>
+            </div>
+            <div class="d-flex justify-content-center align-items-center py-2" v-if="excelError">
+              <span class="text-danger">{{ excelErrorMsg }}</span>
+            </div>
           </div>
         </div>
       </template>
       <template #modal-footer-buttons>
         
         <div class="nav-item dropdown d-md-flex me-3">
-                <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" tabindex="-1" aria-label="Show notifications">
-                  <button class="btn btn-outline-success" type="button">
-                    <IconUpload class="icon" stroke="2" />
-                    Excel yuklash
-                  </button>
-                </a>
-                <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
-                  <div class="card">
-                    <div class="card-header">
-                      <h3 class="card-title">Excel yuklash</h3>
-                    </div>
-                    <div class="card-body">
-                      <input type="file" class="form-control" accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="excelUpload" />
-                    </div>
-                    <div class="card-body">
-                      <h3>Fayl shakli</h3>
-                      <table class="table table-transparent table-responsive table-bordered">
-                        <thead>
-                          <tr>
-                            <th v-for="one in param_names.slice(0, -1)" :key="one.key">{{ one.label }}</th>
-                          </tr>
-                        </thead>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <label for="import-file-input" class="btn btn-outline-success" type="button">
+            <IconUpload class="icon" stroke="2" />
+            Excel yuklash
+          </label>
+          <input type="file"  class="form-control" id="import-file-input" hidden accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="excelUpload" />
+        </div>
       </template>
     </ModalForm>
   </teleport>
@@ -339,6 +337,10 @@ export default {
     regions: [],
     districts: [],
     excelData: [],
+    loading: false,
+    excelError: false,
+    excelErrorMsg: '',
+    emptyExcelCells: 1,
   }),
 
 
@@ -527,8 +529,16 @@ export default {
       console.log(this.wellForm);
     },
     async excelUpload(event) {
-      const response = await uploadFile(this.wellNumber, event.target.files[0]);
-      this.excelData = JSON.parse(response.data.df);
+      this.loading = true;
+      try{
+        const response = await uploadFile(this.wellNumber, event.target.files[0]);
+        this.excelData = JSON.parse(response.data.df);
+      }
+      catch(error){
+        this.excelError = true;
+        this.excelErrorMsg = 'Excel faylni yuklashda xatolik yuzaga keldi, iltimos ';
+      }
+      this.loading = false;
     }
   },
 

@@ -17,6 +17,14 @@ export const getWells = async () => {
   return (await reqApi("/geo/")).data;
 };
 
+export const getWellsWithParameters = async (date) => {
+  return (await reqApi(`/geo/with_parameters`, {date: date})).data;
+};
+
+export const getParameterDates = async () => {
+  return (await reqApi(`/geo/parameter/dates`)).data;
+};
+
 export const getWell = async (id) => {
   return (await reqApi(`/geo/${id}`)).data;
 };

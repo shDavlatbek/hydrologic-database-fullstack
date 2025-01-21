@@ -5,7 +5,7 @@ from api.auth import fastapi_users
 
 from api.dependencies import UOWDep
 from prediction.predictor import predict
-from services.geo import GeoService, ParameterService
+from services.geo import GeoService, ParameterService, ParameterNameService
 from schemas.geo import AddGeoWell, Parameter, ParameterQuery, ParameterAdd
 from typing import Annotated, Optional
 from dateutil.relativedelta import relativedelta
@@ -105,6 +105,14 @@ async def  edit_parameter(
     return {"ok": True}
 
 
+@router.get("/parameter/dates")
+async def  get_parameter_dates(
+    uow: UOWDep,
+    user=Depends(fastapi_users.current_user(active=True))
+):  
+    return await ParameterService().get_parameter_dates(uow)
+
+
 @router.get("/{number}")
 async def get_well(
     uow: UOWDep,
@@ -123,6 +131,9 @@ async def upload_file(
 ):
     from pandas import read_excel
     df = read_excel(file.file)
+    parameter_names = await ParameterNameService().get_parameters(uow)
+    parameter_names = len([name.name for name in parameter_names])
+    df = df.iloc[:, :parameter_names+1]
     return {
         "filename": file.filename,
         "df": df.to_json(orient='records'),
