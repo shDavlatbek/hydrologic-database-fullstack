@@ -2,9 +2,11 @@
     <div class="page">
         <HeaderComponent />
         <div class="page-wrapper">
-            <keep-alive>
-                <router-view />
-            </keep-alive>
+            <router-view v-slot="{ Component, route }">
+                <keep-alive>
+                    <component :is="Component" :key="route.path" />
+                </keep-alive>
+            </router-view>
         </div>
     </div>
 </template>
