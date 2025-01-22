@@ -228,23 +228,21 @@
               <thead class="sticky-top">
                 <tr>
                   <th v-for="one in param_names.slice(0, -1)" :key="one.key">{{ one.label }}</th>
+                  <th>O'chirish</th>
                 </tr>
               </thead>
               <tbody v-if="!loading">
-                <tr v-for="index in emptyExcelCells" :key="index">
-                  <td v-for="one in param_names.slice(0, -1)" :key="one.key">
-                    <input type="text" class="form-control form-control-sm" v-model="one[key]" />
-                  </td>
-                </tr>
+                <EmptyExcelCells :param_names="param_names" />
                 <tr v-for="(one, index) in excelData" :key="index">
                   <td v-for="key in Object.keys(one)" :key="key">
-                    <input type="text" class="form-control form-control-sm" v-model="one[key]" />
+                    <input type="text" class="form-control form-control-sm" :value="one[key]" />
                   </td>
+                  <RemoveRowButton />
                 </tr>
               </tbody>
             </table>
-            <div class="d-flex justify-content-end align-items-center py-2">
-              <button class="btn btn-sm btn-primary rounded-2 px-2 py-1" type="button" @click="emptyExcelCells++">
+            <div class="d-flex justify-content-end align-items-center py-2" v-if="!loading">
+              <button class="btn btn-sm btn-primary rounded-2 px-2 py-1" type="button" @click="addEmptyRow">
                 <IconPlus class="icon" stroke="2" />
                 Bo'sh katak qo'shish
               </button>
@@ -294,13 +292,16 @@ import ModalForm from '@/components/ModalFormComponent.vue';
 import ModalAlert from '@/components/ModalAlert.vue';
 import DataTable from '@/components/DataTable.vue';
 import DeleteParameterButton from '@/components/DeleteParameterButton.vue';
+import RemoveRowButton from '@/components/RemoveRowButton.vue';
+import EmptyExcelCells from '@/components/EmptyCells.vue';
 const uz = require('../plugins/apexchartUzLocale.json')
 
 export default {
   components: {
     // eslint-disable-next-line
     DeleteParameterButton,
-    IconPencil, IconPlus, IconX, IconCheck, IconUpload, ModalForm, DataTable, ModalAlert, 
+    IconPencil, IconPlus, IconX, IconCheck, IconUpload, ModalForm, DataTable, ModalAlert, RemoveRowButton,
+    EmptyExcelCells
   },
   data: () => ({
     well: null,
@@ -340,7 +341,6 @@ export default {
     loading: false,
     excelError: false,
     excelErrorMsg: '',
-    emptyExcelCells: 1,
   }),
 
 
@@ -539,6 +539,14 @@ export default {
         this.excelErrorMsg = 'Excel faylni yuklashda xatolik yuzaga keldi, iltimos ';
       }
       this.loading = false;
+    },
+    newParameterSubmit(event){
+      console.log(event);
+    },
+    addEmptyRow(){
+      this.excelData.push({
+        ...Array(this.param_names.length - 1).fill('')
+      });
     }
   },
 

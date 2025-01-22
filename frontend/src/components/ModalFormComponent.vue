@@ -68,7 +68,7 @@ export default {
     async handleSubmit(event) {
       const form = event.target;
       if (form.checkValidity()) {
-        await this.modalFormConfirm();
+        await this.modalFormConfirm(event);
         form.reset();
       } else {
         form.reportValidity();

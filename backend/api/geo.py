@@ -132,8 +132,11 @@ async def upload_file(
     from pandas import read_excel
     df = read_excel(file.file)
     parameter_names = await ParameterNameService().get_parameters(uow)
-    parameter_names = len([name.name for name in parameter_names])
-    df = df.iloc[:, :parameter_names+1]
+    parameter_names = len([name.name for name in parameter_names]) + 1
+    df = df.iloc[:, :parameter_names]
+    # add empty columns if there are less columns than parameter names
+    for i in range(parameter_names - df.shape[1]):
+        df.insert(df.shape[1], f'empty_column_{i}', '')
     return {
         "filename": file.filename,
         "df": df.to_json(orient='records'),
