@@ -239,10 +239,12 @@
               </thead>
               <tbody v-if="!loading">
                 <tr v-for="(one, index) in excelData" :key="index">
-                  <td v-for="key in Object.keys(one)" :key="key">
-                    <input type="text" class="form-control form-control-sm" :value="one[key]" />
+                  <td v-for="(key, idx) in Object.keys(one)" :key="key">
+                    <input type="text" class="form-control form-control-sm" :value="one[key]" @input="updateCellValue(one, key, $event.target.value)" />
+                    <div class="invalid-feedback" v-if="idx != 0">To'g'ri qiymat kiriting</div>
+                    <div class="invalid-feedback" v-if="idx === 0">'YYYY/MM' formatida kiriting</div>
                   </td>
-                  <RemoveRowButton />
+                  <RemoveRowButton @click="removeRow(index)" />
                 </tr>
               </tbody>
             </table>
@@ -554,34 +556,59 @@ export default {
     },
     async collectData() {
       let dataToSend = [];
-
+      let error = false;
+      const dateRegex = /^\d{4}\/\d{2}$/;
+      const param_length = this.param_names.length - 1;
       // Collect data for empty rows
       document.querySelectorAll('input[type=text]').forEach((input, index) => {
         // Only process inputs from empty rows
-        
-        let rowIndex = Math.floor(index / (this.param_names.length - 1));
+        const inputValue = input.value;
+        let rowIndex = Math.floor(index / param_length);
+        let columnIndex = index % param_length;
         if (!dataToSend[rowIndex]) {
           dataToSend[rowIndex] = {};
         }
-        dataToSend[rowIndex][index] = input.value;
+        if (columnIndex == 0 && !dateRegex.test(inputValue)) {
+          input.classList.add('is-invalid');
+          error = true;
+        } else if (
+          columnIndex != 0 && inputValue.trim() !== '' && !/^-?\d+(\.\d+)?$/.test(inputValue)
+        ) {
+          input.classList.add('is-invalid');
+          error = true;
+        } else {
+          input.classList.remove('is-invalid');
+        }
+        dataToSend[rowIndex][columnIndex] = inputValue;
       });
 
       console.log(dataToSend);
+      if (error) {
+        return;
+      }
       try{
         await sendExcelData(this.wellNumber, dataToSend);
       }
       catch(error){
         this.addParameterForm.closeModal();
         this.modalAlert.openModal();
-        this.modalTitle = "Excel faylni yuklashda xatolik yuzaga keldi";
+        this.modalTitle = "Ma'lumotlar validatsiyadan utmadi, iltimos qaytadan urinib ko'ring";
         this.modalDesc = `Xato xabari: ${error?.message}`;
         this.modalType = 'danger';
+        console.log(error);
+        
       }
       return dataToSend;
     },
     resetExcelData(){
       this.excelData = [];
       this.addEmptyRow();
+    },
+    updateCellValue(row, key, value) {
+      row[key] = value;
+    },
+    removeRow(row){
+      this.excelData.splice(row, 1);
     }
   },
 
@@ -591,6 +618,7 @@ export default {
       try {
         this.well = await getWell(this.wellNumber);
         this.parameter_names = await getParameterNames();
+        this.addEmptyRow();
         this.parameters = await getParameter(this.wellNumber);
         this.regions = await getRegions();
         const response = await getNewWellForm();
@@ -601,7 +629,6 @@ export default {
         this.setGwlOptionsSeries(this.parameters);
         this.setGwlForecastOptionsSeries(await getPredictions(this.wellNumber));
         this.setWellForm(this.well);
-        this.addEmptyRow();
       } catch (error) {
         console.error('Error fetching well data:', error);
         this.modalAlert.openModal();
