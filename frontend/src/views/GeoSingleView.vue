@@ -142,8 +142,8 @@
           </div>
         </form>
       </div>
-      <!-- GRAPHS -->
       <div class="row row-cards">
+        <!-- GRAPHS -->
         <div class="col-12 col-md-6">
           <div class="card">
             <div class="card-body">
@@ -220,7 +220,13 @@
   </div>
 
   <teleport to="body">
-    <ModalForm :modal-id="addParameterModalId" scrollable modal-title="Parameterlar qo'shish" :modal-form-confirm="newParameterSubmit" ref="addParameterForm">
+    <ModalForm 
+      :modal-id="addParameterModalId" scrollable 
+      modal-title="Parameterlar qo'shish" 
+      :modal-form-confirm="collectData" 
+      :reset-button-function="resetExcelData"
+      ref="addParameterForm"
+    >
       <template #modal-body>
         <div class="modal-body p-0 px-2">
           <div class="row">
@@ -232,7 +238,6 @@
                 </tr>
               </thead>
               <tbody v-if="!loading">
-                <EmptyExcelCells :param_names="param_names" />
                 <tr v-for="(one, index) in excelData" :key="index">
                   <td v-for="key in Object.keys(one)" :key="key">
                     <input type="text" class="form-control form-control-sm" :value="one[key]" />
@@ -283,7 +288,7 @@
 </template>
 
 <script>
-import { getWell, getParameterNames, getParameter, getPredictions, getNewWellForm, editWell, uploadFile } from '@/api/geo';
+import { getWell, getParameterNames, getParameter, getPredictions, getNewWellForm, editWell, uploadFile, sendExcelData } from '@/api/geo';
 import { getRegions, getDistricts } from '@/api/common';
 import { ref } from 'vue';
 import { format } from 'date-fns';
@@ -293,15 +298,13 @@ import ModalAlert from '@/components/ModalAlert.vue';
 import DataTable from '@/components/DataTable.vue';
 import DeleteParameterButton from '@/components/DeleteParameterButton.vue';
 import RemoveRowButton from '@/components/RemoveRowButton.vue';
-import EmptyExcelCells from '@/components/EmptyCells.vue';
 const uz = require('../plugins/apexchartUzLocale.json')
 
 export default {
   components: {
     // eslint-disable-next-line
     DeleteParameterButton,
-    IconPencil, IconPlus, IconX, IconCheck, IconUpload, ModalForm, DataTable, ModalAlert, RemoveRowButton,
-    EmptyExcelCells
+    IconPencil, IconPlus, IconX, IconCheck, IconUpload, ModalForm, DataTable, ModalAlert, RemoveRowButton
   },
   data: () => ({
     well: null,
@@ -346,8 +349,10 @@ export default {
 
   setup() {
     const modalAlert = ref();
+    const addParameterForm = ref();
     return {
-      modalAlert
+      modalAlert,
+      addParameterForm
     }
   },
   computed: {
@@ -530,9 +535,11 @@ export default {
     },
     async excelUpload(event) {
       this.loading = true;
+      this.excelError = false;
+      this.excelErrorMsg = '';
       try{
         const response = await uploadFile(this.wellNumber, event.target.files[0]);
-        this.excelData = JSON.parse(response.data.df);
+        this.excelData.push(...JSON.parse(response.data.df));
       }
       catch(error){
         this.excelError = true;
@@ -540,13 +547,41 @@ export default {
       }
       this.loading = false;
     },
-    newParameterSubmit(event){
-      console.log(event);
-    },
     addEmptyRow(){
       this.excelData.push({
         ...Array(this.param_names.length - 1).fill('')
       });
+    },
+    async collectData() {
+      let dataToSend = [];
+
+      // Collect data for empty rows
+      document.querySelectorAll('input[type=text]').forEach((input, index) => {
+        // Only process inputs from empty rows
+        
+        let rowIndex = Math.floor(index / (this.param_names.length - 1));
+        if (!dataToSend[rowIndex]) {
+          dataToSend[rowIndex] = {};
+        }
+        dataToSend[rowIndex][index] = input.value;
+      });
+
+      console.log(dataToSend);
+      try{
+        await sendExcelData(this.wellNumber, dataToSend);
+      }
+      catch(error){
+        this.addParameterForm.closeModal();
+        this.modalAlert.openModal();
+        this.modalTitle = "Excel faylni yuklashda xatolik yuzaga keldi";
+        this.modalDesc = `Xato xabari: ${error?.message}`;
+        this.modalType = 'danger';
+      }
+      return dataToSend;
+    },
+    resetExcelData(){
+      this.excelData = [];
+      this.addEmptyRow();
     }
   },
 
@@ -566,6 +601,7 @@ export default {
         this.setGwlOptionsSeries(this.parameters);
         this.setGwlForecastOptionsSeries(await getPredictions(this.wellNumber));
         this.setWellForm(this.well);
+        this.addEmptyRow();
       } catch (error) {
         console.error('Error fetching well data:', error);
         this.modalAlert.openModal();

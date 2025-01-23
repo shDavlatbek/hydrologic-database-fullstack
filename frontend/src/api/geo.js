@@ -57,3 +57,7 @@ export const uploadFile = async (well_number, file) => {
   const response = await api.request(config);
   return response;
 };
+
+export const sendExcelData = async (well_number, data) => {
+  return (await reqApi(`/geo/${well_number}/parameter/bulk-add`, data, "POST")).data;
+};
