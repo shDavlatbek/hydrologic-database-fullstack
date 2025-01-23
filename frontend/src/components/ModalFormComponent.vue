@@ -9,12 +9,30 @@
         </div>
         <slot name="modal-body"></slot>
           <div class="modal-footer">
-            <button class="btn btn-link link-secondary" data-bs-dismiss="modal">
+            <button class="btn btn-link link-secondary" type="button" data-bs-dismiss="modal">
               Bekor qilish
             </button>
             <span class="ms-auto"></span>
             <slot name="modal-footer-buttons"></slot>
-            <input type="reset" class="btn" value="Tozalash" />
+            <div class="btn-group dropup">
+              <button type="button" class="btn" data-bs-toggle="dropdown" aria-expanded="false">
+                Tozalash
+              </button>
+              <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
+                <div class="card w-100">
+                  <div class="card-body p-2 m-0 w-100">
+                    <h3 class="card-title m-0 w-100 d-flex flex-row">Tasdiqlash
+                      <button class="btn btn-sm btn-danger btn-icon rounded-2 p-2 ms-auto" type="button">
+                        <IconX class="icon" stroke="2" />
+                      </button>
+                      <button class="btn btn-sm btn-secondary btn-icon rounded-2 p-2 ms-1" type="reset" @click="resetButtonFunction">
+                        <IconTrash class="icon" stroke="2" />
+                      </button>
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </div>
             <button type="submit" class="btn btn-primary">
               <IconPlus class="icon" stroke="2" />
               Qo'shish
@@ -29,7 +47,7 @@
 </template>
 
 <script>
-import { IconPlus } from '@tabler/icons-vue';
+import { IconTrash, IconPlus, IconX } from '@tabler/icons-vue';
 import { Modal } from 'bootstrap';
 
 
@@ -59,10 +77,15 @@ export default {
     scrollable: {
       type: Boolean,
       default: false
+    },
+    resetButtonFunction: {
+      type: Function,
+      required: false,
+      default: () => {}
     }
   },
   components: {
-    IconPlus
+    IconPlus, IconTrash, IconX
   },
   methods: {
     async handleSubmit(event) {
