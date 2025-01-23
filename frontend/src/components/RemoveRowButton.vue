@@ -1,14 +1,9 @@
 
 <script setup>
 import { IconX, IconTrash } from '@tabler/icons-vue'
+import { defineEmits } from 'vue'
 
-function removeClosestRow(event) {
-  const button = event.target;
-  const row = button.closest('tr');
-  if (row) {
-    row.remove();
-  }
-}
+const emit = defineEmits(['click'])
 </script>
 
 <template>
@@ -23,7 +18,7 @@ function removeClosestRow(event) {
             <button class="btn btn-sm btn-danger btn-icon rounded-2 p-2 ms-auto" type="button">
               <IconX class="icon" stroke="2" />
             </button>
-            <button class="btn btn-sm btn-secondary btn-icon rounded-2 p-2 ms-1" @click="removeClosestRow">
+            <button class="btn btn-sm btn-secondary btn-icon rounded-2 p-2 ms-1" type="button" @click="emit('click')">
               <IconTrash class="icon" stroke="2" />
             </button>
           </h3>
