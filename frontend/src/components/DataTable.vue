@@ -2,7 +2,7 @@
   
   <div class="card"> 
     <!-- Search Filter -->
-    <div class="card-body border-bottom py-3">
+    <div class="card-body border-bottom py-3" v-if="!compact">
         <div class="d-flex">
           <div class="text-secondary">
             <div class="mx-2 d-inline-block">
@@ -81,8 +81,8 @@
         </tbody>
       </table>
     </div>
-    <div class="card-footer d-flex align-items-center">
-      <p class="m-0 text-secondary">
+    <div class="card-footer d-flex align-items-center" :class="{'justify-content-center': compact}">
+      <p class="m-0 text-secondary" v-if="!compact">
         {{ 
           text.dataPerPage
             .replace('$data', filteredData.length)
@@ -90,14 +90,14 @@
             .replace('$to', (currentPage - 1) * perPage + paginatedData.length) 
         }}
       </p>
-      <ul class="pagination m-0 ms-auto">
+      <ul class="pagination m-0" :class="{'ms-auto': !compact}">
         <li class="page-item me-2" :class="{disabled: currentPage === 1}">
           <span class="page-link" tabindex="-1" aria-disabled="true" @click="changePage(currentPage - 1)">
             <!-- Left Arrow -->
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
               <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l-6 6l6 6" />
             </svg>
-            {{ text.previous }}
+            <template v-if="!compact">{{ text.previous }}</template>
           </span>
         </li>
 
@@ -127,7 +127,7 @@
 
         <li class="page-item ms-2" :class="{disabled: currentPage === totalPages || totalPages === 0}">
           <span class="page-link" tabindex="-1" aria-disabled="true" @click="changePage(currentPage + 1)">
-            {{ text.next }}
+            <template v-if="!compact">{{ text.next }}</template>
             <!-- Right Arrow -->
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
               <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" />
@@ -169,6 +169,25 @@ export default {
       required: false,
       default: 'Bunday ma\'lumotlar topilmadi'
     },
+    compact: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    local_text: {
+      type: Object,
+      required: false,
+      default: () => ({
+        previous: 'Oldingi',
+        next: 'Keyingi',
+        perPageOptionText: '$perPage ma\'lumotlar sahifasida',
+        perPageText: '$perPage ta',
+        search: 'Qidiruv:',
+        noData: 'Ma\'lumotlar topilmadi',
+        noSearchResults: 'Bunday ma\'lumotlar topilmadi',
+        dataPerPage: '$data ta ma\'lumotdan $from dan $to gacha ko\'rsatilmoqda',
+      })
+    }
   },
   data() {
     return {
@@ -179,8 +198,6 @@ export default {
       perPage: 10,
       filteredData: [],
       text: {
-        first: 'chi bo\'lib',
-        second: 'chidan',
         previous: 'Oldingi',
         next: 'Keyingi',
         perPageOptionText: '$perPage ma\'lumotlar sahifasida',
@@ -191,6 +208,16 @@ export default {
         dataPerPage: '$data ta ma\'lumotdan $from dan $to gacha ko\'rsatilmoqda',
       }
     }
+  },
+  mounted() {
+    this.text.previous = this.local_text.previous
+    this.text.next = this.local_text.next
+    this.text.perPageOptionText = this.local_text.perPageOptionText
+    this.text.perPageText = this.local_text.perPageText
+    this.text.search = this.local_text.search
+    this.text.noData = this.local_text.noData
+    this.text.noSearchResults = this.local_text.noSearchResults
+    this.text.dataPerPage = this.local_text.dataPerPage
   },
   computed: {
     totalPages() {
