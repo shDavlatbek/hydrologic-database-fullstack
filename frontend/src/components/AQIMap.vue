@@ -89,6 +89,14 @@ const markers = L.markerClusterGroup();
 //   return curTimeParameter;
 // }
 
+const updateMapView = () => {
+  if (map) {
+    map.flyTo(props.viewCoordinates, props.viewZoom, {
+      duration: 1.5,
+    });
+  }
+}
+
 const updateMarkers = () => {
   
   if (map) {
@@ -170,6 +178,7 @@ onMounted(() => {
 });
 
 watch([() => props.wells, () => props.selectedDate], updateMarkers, { deep: true });
+watch([() => props.viewCoordinates, () => props.viewZoom], updateMapView, { deep: true });
 // watch([() => props.wells], updateInterpolation, { deep: true });
 </script>
 
