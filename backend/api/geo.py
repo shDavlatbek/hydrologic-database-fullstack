@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
-from fastapi import APIRouter, Depends, Query, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile
+from pydantic import ValidationError
 from api.auth import fastapi_users
 
 from api.dependencies import UOWDep
@@ -144,6 +145,71 @@ async def upload_file(
         "file_size": len(await file.read()),  # Read the file content to determine the size
     }
 
+
+@router.post("/{number}/parameter/bulk-add")
+async def bulk_add_parameter(
+    uow: UOWDep,
+    number: int,
+    data: list[dict],
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    existing_parameters = []
+    try: 
+        for param_index, parameter in enumerate(data):
+            for index, (key, value) in enumerate(parameter.items()):
+                if index == 0:
+                    continue
+                else:
+                    ParameterAdd(
+                        well=number,
+                        parameter_name=index,
+                        value=value,
+                        date=datetime.strptime(parameter['0'], '%Y/%m')
+                    )
+                    existing_parameter = await ParameterService().get_parameters(uow, 
+                        filters={'date': datetime.strptime(parameter['0'], '%Y/%m'),
+                                 'well': number,
+                                 'parameter_name': index}
+                    )
+                    if existing_parameter:
+                        existing_parameters.append(existing_parameter[0])
+        return {"ok": True, "existing_parameters": existing_parameters}
+    except (ValidationError, ValueError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True}
+
+
+@router.post("/{number}/parameter/bulk-add/confirmed")
+async def bulk_add_parameter_confirmed(
+    uow: UOWDep,
+    number: int,
+    data: list[dict],
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    existing_parameters = []
+    try: 
+        for param_index, parameter in enumerate(data):
+            for index, (key, value) in enumerate(parameter.items()):
+                if index == 0:
+                    continue
+                else:
+                    ParameterAdd(
+                        well=number,
+                        parameter_name=index,
+                        value=value,
+                        date=datetime.strptime(parameter['0'], '%Y/%m')
+                    )
+                    existing_parameter = await ParameterService().get_parameters(uow, 
+                        filters={'date': datetime.strptime(parameter['0'], '%Y/%m'),
+                                 'well': number,
+                                 'parameter_name': index}
+                    )
+                    if existing_parameter:
+                        existing_parameters.append(existing_parameter[0])
+        return {"ok": True, "existing_parameters": existing_parameters}
+    except (ValidationError, ValueError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True}
 
 
 @router.post("/{number}/edit")

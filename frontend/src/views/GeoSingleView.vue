@@ -228,9 +228,35 @@
       ref="addParameterForm"
     >
       <template #modal-body>
+        <div class="modal-status bg-danger" v-if="excelError"></div>
+        <div class="modal-body p-0 m-0" v-if="excelError">
+          <div class="alert alert-danger mb-0 rounded-0 border-start-0"  role="alert">
+            <div class="d-flex">
+              <div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon alert-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+              </div>
+              <div>
+                {{ excelErrorMsg }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-status bg-warning" v-if="dublicateExist"></div>
+        <div class="modal-body p-0 m-0" v-if="dublicateExist">
+          <div class="alert alert-warning mb-0 rounded-0 border-start-0"  role="alert">
+            <div class="d-flex">
+              <div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon alert-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 9v4"></path><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"></path><path d="M12 16h.01"></path></svg>
+              </div>
+              <div>
+                {{ dublicateExistMsg }}
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="modal-body p-0 px-2">
           <div class="row">
-            <table class="table table-responsive table-bordered mb-0 pb-0">
+            <table class="table table-responsive table-bordered mb-0 pb-0" id="new-parameters-table">
               <thead class="sticky-top">
                 <tr>
                   <th v-for="one in param_names.slice(0, -1)" :key="one.key">{{ one.label }}</th>
@@ -241,8 +267,9 @@
                 <tr v-for="(one, index) in excelData" :key="index">
                   <td v-for="(key, idx) in Object.keys(one)" :key="key">
                     <input type="text" class="form-control form-control-sm" :value="one[key]" @input="updateCellValue(one, key, $event.target.value)" />
-                    <div class="invalid-feedback" v-if="idx != 0">To'g'ri qiymat kiriting</div>
-                    <div class="invalid-feedback" v-if="idx === 0">'YYYY/MM' formatida kiriting</div>
+                    <div class="invalid-feedback" v-if="idx != 0 && validationError">To'g'ri qiymat kiriting</div>
+                    <div class="invalid-feedback" v-if="idx === 0 && validationError">'YYYY/MM' formatida kiriting</div>
+                    <div class="invalid-feedback" v-if="dublicateExist">Mavjud</div>
                   </td>
                   <RemoveRowButton @click="removeRow(index)" />
                 </tr>
@@ -256,9 +283,6 @@
             </div>
             <div class="d-flex justify-content-center align-items-center py-5" v-if="loading">
               <div class="loader-custom"></div>
-            </div>
-            <div class="d-flex justify-content-center align-items-center py-2" v-if="excelError">
-              <span class="text-danger">{{ excelErrorMsg }}</span>
             </div>
           </div>
         </div>
@@ -290,7 +314,7 @@
 </template>
 
 <script>
-import { getWell, getParameterNames, getParameter, getPredictions, getNewWellForm, editWell, uploadFile, sendExcelData } from '@/api/geo';
+import { getWell, getParameterNames, getParameter, getPredictions, getNewWellForm, editWell, uploadFile, sendExcelData, sendConfirmedExcelData } from '@/api/geo';
 import { getRegions, getDistricts } from '@/api/common';
 import { ref } from 'vue';
 import { format } from 'date-fns';
@@ -346,6 +370,10 @@ export default {
     loading: false,
     excelError: false,
     excelErrorMsg: '',
+    dublicateExist: false,
+    dublicateExistMsg: '',
+    confirmOverwrite: false,
+    validationError: false,
   }),
 
 
@@ -550,6 +578,7 @@ export default {
       this.loading = false;
     },
     addEmptyRow(){
+      this.dublicateExist = false;
       this.excelData.push({
         ...Array(this.param_names.length - 1).fill('')
       });
@@ -560,55 +589,109 @@ export default {
       const dateRegex = /^\d{4}\/\d{2}$/;
       const param_length = this.param_names.length - 1;
       // Collect data for empty rows
-      document.querySelectorAll('input[type=text]').forEach((input, index) => {
+      document.querySelectorAll('#new-parameters-table input[type=text]').forEach((input, index) => {
         // Only process inputs from empty rows
         const inputValue = input.value;
         let rowIndex = Math.floor(index / param_length);
         let columnIndex = index % param_length;
+        this.validationError = false;
         if (!dataToSend[rowIndex]) {
           dataToSend[rowIndex] = {};
         }
         if (columnIndex == 0 && !dateRegex.test(inputValue)) {
           input.classList.add('is-invalid');
           error = true;
+          this.validationError = true;
         } else if (
           columnIndex != 0 && inputValue.trim() !== '' && !/^-?\d+(\.\d+)?$/.test(inputValue)
         ) {
           input.classList.add('is-invalid');
           error = true;
+          this.validationError = true;
         } else {
           input.classList.remove('is-invalid');
         }
         dataToSend[rowIndex][columnIndex] = inputValue;
       });
-
-      console.log(dataToSend);
       if (error) {
         return;
       }
       try{
-        await sendExcelData(this.wellNumber, dataToSend);
+        this.loading = true;
+        const response = await sendExcelData(this.wellNumber, dataToSend);
+        if (response.existing_parameters.length > 0) {
+          if (this.confirmOverwrite) {
+            this.confirmOverwrite = false;
+            try{
+              await sendConfirmedExcelData(this.wellNumber, dataToSend);
+              this.parameters = await getParameter(this.wellNumber);
+              this.setGwlOptionsSeries(this.parameters);
+              this.setGwlForecastOptionsSeries(await getPredictions(this.wellNumber));
+              this.excelData = [];
+              this.addEmptyRow();
+              this.addParameterForm.closeModal();
+              this.modalAlert.openModal();
+              this.modalTitle = "Ma'lumotlar yuklandi";
+              this.modalType = 'success';
+              this.loading = false;
+            }
+            catch(error){
+              this.loading = false;
+              this.addParameterForm.closeModal();
+              this.modalAlert.openModal();
+              this.modalTitle = "Ma'lumotlar yuklashda xatolik yuzaga keldi, iltimos qaytadan urinib ko'ring";
+              this.modalDesc = `Xato xabari: ${error?.message}`;
+              this.modalType = 'danger';
+            }
+          } else {
+            this.dublicateExist = true;
+            this.dublicateExistMsg = "Bazi sanada ma'lumotlar mavjud, mavjud sanadagi ma'lumotlarni o'zgartirishni istasangiz, qo'shish tugmasini yana bosing";
+            let exist_rows_idx = -1;
+            this.loading = false;
+            await this.$nextTick();
+            document.querySelectorAll('#new-parameters-table input[type=text]').forEach((input, index) => {
+              
+              let rowIndex = Math.floor(index / param_length);
+              let columnIndex = index % param_length;
+              response.existing_parameters.forEach(param => {
+                let dateParts = param.date.split("T")[0].split("-");
+                if (columnIndex == 0 && `${dateParts[0]}/${dateParts[1]}` == input.value) {
+                  input.classList.add('is-invalid');
+                  exist_rows_idx = rowIndex;
+                } else if (columnIndex != 0 && param.parameter_name == columnIndex && exist_rows_idx == rowIndex) {
+                  input.classList.add('is-invalid');
+                }
+              })
+            });
+            this.existing_parameters = response.existing_parameters;
+          }
+        } else {
+          this.confirmOverwrite = true;
+        }
       }
       catch(error){
+        this.loading = false;
         this.addParameterForm.closeModal();
         this.modalAlert.openModal();
-        this.modalTitle = "Ma'lumotlar validatsiyadan utmadi, iltimos qaytadan urinib ko'ring";
+        this.modalTitle = "Ma'lumotlar yuklashda xatolik yuzaga keldi, iltimos qaytadan urinib ko'ring";
         this.modalDesc = `Xato xabari: ${error?.message}`;
         this.modalType = 'danger';
         console.log(error);
-        
       }
       return dataToSend;
     },
     resetExcelData(){
       this.excelData = [];
       this.addEmptyRow();
+      this.confirmOverwrite = false;
     },
     updateCellValue(row, key, value) {
       row[key] = value;
+      this.confirmOverwrite = false;
     },
     removeRow(row){
       this.excelData.splice(row, 1);
+      this.confirmOverwrite = false;
     }
   },
 
