@@ -16,11 +16,45 @@ const props = defineProps({
 });
 
 const { wells } = toRefs(props);
-const dates = ref(wells.value.map(well => 
-    well.parameters.map(parameter => parameter.date)
-  ));
+const numbers = ref(wells.value.map(well => well.number));
 
 const gwls = ref([]);
+const rain = ref([]);
+const avt = ref([]);
+
+const tempColor = (val) => {
+  if(val > 50){
+    return '#232323'
+  }else if(val < 50 && val >= 40){
+    return '#6b1527'
+  }else if(val < 40 && val >= 30){
+    return '#be3066'
+  }else if(val < 30 && val >= 25){
+    return '#e56d53'
+  }else if(val < 25 && val >= 20){
+    return '#eaa43e'
+  }else if(val < 20 && val >= 15){
+    return '#ebd735'
+  }else if(val < 15 && val >= 10){
+    return '#bee43d'
+  }else if(val < 10 && val >= 5){
+    return '#59d049'
+  }else if(val < 5 && val >= 0){
+    return '#4bb698'
+  }else if(val < 0 && val >= -5){
+    return '#3e79c6'
+  }else if(val < -5 && val >= -10){
+    return '#554eb1'
+  }else if(val < -10 && val >= -15){
+    return '#24186a'
+  }else if(val < -15 && val >= -20){
+    return '#ffaaff'
+  }else if(val < -20 && val >= -30){
+    return '#ffaaff'
+  }else if(val < -30 && val >= -40){
+    return '#eeeeee'
+  }
+}
 
 const drawChart = () => {
   chart.value = Highcharts.chart('home-page-chart', {
@@ -117,15 +151,11 @@ const drawChart = () => {
       xAxis: {
         lineColor:'#BDC1D4',
         startOnTick:true,
-        categories: dates.value,
+        categories: numbers.value,
         crosshair: true,
-        type: 'datetime',
-        dateTimeLabelFormats: {
-            day: '%Y'
-        }
       },
       yAxis: [
-        {
+      {
           title: {
             text: 'Temperature (°C)',
             style: {
@@ -254,29 +284,30 @@ const drawChart = () => {
           visible: false,  // Do not display this axis
         },
 
+
       ],
       tooltip: {
         shared: true,
         enabled:true,
         borderWidth:0,
-        backgroundColor:'transparent',
+        // backgroundColor:'transparent',
         style:{
           width:247,
         },
         aligh:'left',
-        padding:0,
-        shadow:false,
-        useHTML:true,
-        formatter: function () {
-          const list =  this.points.map(item => {
-            return ` <li>
-                    <div class="circle" style="background-color: ${item.color}"></div>${item.series.name}: <strong style="color:${item.color}">${ item.y}</strong>
-                  </li>`
-          })
-          return `<div class="tooltip">
-                  <ul>${list.join('')}</ul>
-              </div>`;
-        }
+        // padding:0,
+        // shadow:false,
+        // useHTML:true,
+        // formatter: function () {
+        //   const list =  this.points.map(item => {
+        //     return ` <li>
+        //             <div class="circle" style="background-color: ${item.color}"></div>${item.series.name}: <strong style="color:${item.color}">${ item.y}</strong>
+        //           </li>`
+        //   })
+        //   return `<div class="tooltip">
+        //           <ul>${list.join('')}</ul>
+        //       </div>`;
+        // }
       },
       legend: {
         itemStyle:{
@@ -286,7 +317,7 @@ const drawChart = () => {
         },
       },
       series: [{
-        name: 'AQI',
+        name: 'GWL (м)',
         type: 'spline',
         marker:{
           enabled:false
@@ -313,14 +344,6 @@ const drawChart = () => {
         lineWidth:8,
         yAxis: 5,
         data: gwls.value
-      },{
-        name: 'Влажность (%)',
-        type: 'spline',
-        colorKey: null,
-        lineWidth:4,
-        yAxis: 4,
-        color:'rgba(0, 192, 255, 1)',
-        data: gwls.value
       }, {
         name: 'Осадки (мм)',
         type: 'column',
@@ -329,10 +352,9 @@ const drawChart = () => {
         maxPointWidth: 20,
         yAxis: 2,
         color:'rgba(51, 84, 170, 1)',
-        data: gwls.value
+        data: rain.value
       }, {
         name: 'Температура (°C)',
-        visible: false,
         yAxis: 0,
         marker:{
           enabled:false
@@ -341,96 +363,46 @@ const drawChart = () => {
         type: 'spline',
         zones: [{
           value: -40,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(-40)
         }, {
           value: -30,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(-30)
         }, {
           value: -20,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(-20)
         }, {
           value: -10,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(-10)
         }, {
           value: -5,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(-5)
         }, {
           value: 0,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(0)
         }, {
           value: 5,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(5)
         }, {
           value: 10,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(10)
         },  {
           value: 20,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(20)
         },  {
           value: 30,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(30)
         },  {
           value: 40,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(40)
         },  {
           value: 50,
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(50)
         }, {
-          color: 'rgba(53, 161, 255, 1)'
+          color: tempColor(60)
         }],
-        color:'rgba(53, 161, 255, 1)',
-        data: gwls.value
-      }, {
-        name: 'Скорость ветра (м/с)',
-        type: 'spline',
-        visible: false,
-        yAxis: 1,
-        color:'rgba(40, 40, 40, 1)',
-        data: gwls.value
-
-      }, {
-        name: 'Давление (кПа)',
-        color:'rgba(189, 0, 255, 1)',
-        type: 'spline',
-        visible: false,
-        yAxis: 7,
-        data: gwls.value
-      }, {
-        name: 'CO2 (ppm)',
-        type: 'spline',
-        yAxis: 8,
-        visible: false,
-        color:'rgba(0, 223, 156, 1)',
-        data: gwls.value
-      },  {
-        name: 'PM2.5 (мкг/м³)',
-        type: 'spline',
-        yAxis: 6,
-        visible: false,
-        color:'rgba(236, 142, 79, 1)',
-        data: gwls.value
-      }, {
-        name: 'PM10 (мкг/м³)',
-        color:'rgba(233, 95, 94, 1)',
-        type: 'spline',
-        yAxis: 6,
-        visible: false,
-        data: gwls.value
-      }, {
-        name: 'PM1.0 (мкг/м³)',
-        type: 'spline',
-        yAxis: 6,
-        visible: false,
-        color:'rgba(243, 200, 47, 1)',
-        data: gwls.value
-      },{
-        name: 'UV индекс',
-        type: 'spline',
-        yAxis: 6,
-        visible: false,
-        color:'rgb(243,158,55)',
-        data: gwls.value
-      },]
+        color:tempColor(70),
+        data: avt.value
+      }]
     })
   
 }
@@ -446,9 +418,13 @@ watch(wells, (newWells) => {
     gwls.value = Object.values(newWells.flatMap(well => 
       well.parameters.filter(param => param.parameter_name === 1).map(param => param.value)
     ));
-    dates.value = Object.values(newWells.flatMap(well => 
-      well.parameters.filter(param => param.parameter_name === 1).map(param => param.date)
+    rain.value = Object.values(newWells.flatMap(well => 
+      well.parameters.filter(param => param.parameter_name === 2).map(param => param.value)
     ));
+    avt.value = Object.values(newWells.flatMap(well => 
+      well.parameters.filter(param => param.parameter_name === 3).map(param => param.value)
+    ));
+    numbers.value = newWells.map(well => well.number)
     console.log('Filtered Parameters:', gwls.value);
     drawChart()
   }
