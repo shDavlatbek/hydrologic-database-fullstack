@@ -497,6 +497,7 @@ export default {
     setGwlOptionsSeries(parameters){
       const dates = [];
       const params = [];
+      this.gwlChartSeries = [];
       for (const param of parameters) {
         const date = param.date.split("T")[0]; 
         if (!dates.includes(date)) {
@@ -514,6 +515,7 @@ export default {
     },
     setGwlForecastOptionsSeries(predictions){
       const params = [];
+      this.gwlChartSeriesForecast = [];
       predictions.predictions.forEach((prediction) => {
         params.push(Math.round(prediction * 100) / 100)
       })
@@ -645,6 +647,7 @@ export default {
             }
           } else {
             this.dublicateExist = true;
+            this.confirmOverwrite = true;
             this.dublicateExistMsg = "Bazi sanada ma'lumotlar mavjud, mavjud sanadagi ma'lumotlarni o'zgartirishni istasangiz, qo'shish tugmasini yana bosing";
             let exist_rows_idx = -1;
             this.loading = false;
@@ -666,7 +669,28 @@ export default {
             this.existing_parameters = response.existing_parameters;
           }
         } else {
-          this.confirmOverwrite = true;
+
+          try{
+              await sendConfirmedExcelData(this.wellNumber, dataToSend);
+              this.parameters = await getParameter(this.wellNumber);
+              this.setGwlOptionsSeries(this.parameters);
+              this.setGwlForecastOptionsSeries(await getPredictions(this.wellNumber));
+              this.excelData = [];
+              this.addEmptyRow();
+              this.addParameterForm.closeModal();
+              this.modalAlert.openModal();
+              this.modalTitle = "Ma'lumotlar yuklandi";
+              this.modalType = 'success';
+              this.loading = false;
+            }
+            catch(error){
+              this.loading = false;
+              this.addParameterForm.closeModal();
+              this.modalAlert.openModal();
+              this.modalTitle = "Ma'lumotlar yuklashda xatolik yuzaga keldi, iltimos qaytadan urinib ko'ring";
+              this.modalDesc = `Xato xabari: ${error?.message}`;
+              this.modalType = 'danger';
+            }
         }
       }
       catch(error){

@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from schemas.common import NameFieldAdd
-from schemas.geo import AddGeoWell, Parameter
+from schemas.geo import AddGeoWell, Parameter, ParameterQuery
 from utils.unitofwork import IUnitOfWork
 
 
@@ -117,6 +117,8 @@ class ParameterService:
             mint_values = [item.value for item in mint] + [0]*12
             maxt_values = [item.value for item in maxt] + [0]*12
             avgt_values = [item.value for item in avgt] + [0]*12
+            
+            print(len(dates), len(gwl_values), len(rainfall_values), len(mint_values), len(maxt_values), len(avgt_values), sep='\n\n')
             return dates, gwl_values, rainfall_values, mint_values, maxt_values, avgt_values
     
     async def get_parameter_dates(self, uow: IUnitOfWork):
@@ -130,3 +132,9 @@ class ParameterService:
         async with uow:
             await uow.parameter.edit_one(parameter_id, parameter_dict)
             await uow.commit()
+            
+    async def delete_parameter(self, uow: IUnitOfWork, filters: ParameterQuery):
+        async with uow:
+            await uow.parameter.delete_one(**filters.model_dump())
+            await uow.commit()
+

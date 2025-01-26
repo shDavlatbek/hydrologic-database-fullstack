@@ -65,3 +65,7 @@ export const sendExcelData = async (well_number, data) => {
 export const sendConfirmedExcelData = async (well_number, data) => {
   return (await reqApi(`/geo/${well_number}/parameter/bulk-add/confirmed`, data, "POST")).data;
 };
+
+export const deleteParameter = async (well_number, date) => {
+  return (await reqApi(`/geo/parameter/delete`, {well: well_number, date: date}, "POST")).data;
+};

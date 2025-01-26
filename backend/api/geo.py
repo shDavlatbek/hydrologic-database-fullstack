@@ -73,17 +73,18 @@ async def get_predict(
     user=Depends(fastapi_users.current_user(active=True))
 ):
     
-    dates, gwl, rain, mint, maxt, avgt = await ParameterService().predict_parameters(uow, well_number)
-    predictions = predict(
-        dates,
-        well_number,
-        gwl, 
-        rain, 
-        mint, 
-        maxt, 
-        avgt
-    )
-    return {'dates': dates[12:], 'predictions': predictions}
+    # dates, gwl, rain, mint, maxt, avgt = await ParameterService().predict_parameters(uow, well_number)
+    # predictions = predict(
+    #     dates,
+    #     well_number,
+    #     gwl, 
+    #     rain, 
+    #     mint, 
+    #     maxt, 
+    #     avgt
+    # )
+    # return {'dates': dates[12:], 'predictions': predictions}
+    return {'dates': [], 'predictions': []}
 
 
 @router.post("/parameter/add")
@@ -112,6 +113,15 @@ async def  get_parameter_dates(
     user=Depends(fastapi_users.current_user(active=True))
 ):  
     return await ParameterService().get_parameter_dates(uow)
+
+
+@router.post("/parameter/delete")
+async def delete_parameter(
+    uow: UOWDep,
+    filters: ParameterQuery,
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    return await ParameterService().delete_parameter(uow, filters)
 
 
 @router.get("/{number}")
@@ -186,30 +196,22 @@ async def bulk_add_parameter_confirmed(
     data: list[dict],
     user=Depends(fastapi_users.current_user(active=True))
 ):
-    existing_parameters = []
     try: 
         for param_index, parameter in enumerate(data):
             for index, (key, value) in enumerate(parameter.items()):
                 if index == 0:
                     continue
                 else:
-                    ParameterAdd(
+                    param = ParameterAdd(
                         well=number,
                         parameter_name=index,
                         value=value,
                         date=datetime.strptime(parameter['0'], '%Y/%m')
                     )
-                    existing_parameter = await ParameterService().get_parameters(uow, 
-                        filters={'date': datetime.strptime(parameter['0'], '%Y/%m'),
-                                 'well': number,
-                                 'parameter_name': index}
-                    )
-                    if existing_parameter:
-                        existing_parameters.append(existing_parameter[0])
-        return {"ok": True, "existing_parameters": existing_parameters}
-    except (ValidationError, ValueError) as e:
+                    await ParameterService().add_parameter(uow, param)
+        return {"ok": True}
+    except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return {"ok": True}
 
 
 @router.post("/{number}/edit")

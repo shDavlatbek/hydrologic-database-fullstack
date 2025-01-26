@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-from sqlalchemy import asc, desc, insert, select, update
+from sqlalchemy import asc, delete, desc, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
@@ -69,6 +69,10 @@ class SQLAlchemyRepository(AbstractRepository):
 
         res = await self.session.execute(stmt)
         return [row[0].to_read_model() for row in res.fetchall()]
+    
+    async def delete_one(self, **filter_by):
+        stmt = delete(self.model).filter_by(**filter_by)
+        await self.session.execute(stmt)
     
     async def find_one(self, **filter_by):
         stmt = select(self.model).filter_by(**filter_by)

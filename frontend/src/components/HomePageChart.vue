@@ -343,7 +343,8 @@ const drawChart = () => {
         }],
         lineWidth:8,
         yAxis: 5,
-        data: gwls.value
+        data: gwls.value,
+        zIndex:12,
       }, {
         name: 'Осадки (мм)',
         type: 'column',
@@ -352,7 +353,8 @@ const drawChart = () => {
         maxPointWidth: 20,
         yAxis: 2,
         color:'rgba(51, 84, 170, 1)',
-        data: rain.value
+        data: rain.value,
+        zIndex:11,
       }, {
         name: 'Температура (°C)',
         yAxis: 0,
@@ -360,6 +362,7 @@ const drawChart = () => {
           enabled:false
         },
         lineWidth:4,
+        zIndex:10,
         type: 'spline',
         zones: [{
           value: -40,
@@ -416,13 +419,13 @@ onMounted(() => {
 watch(wells, (newWells) => {
   if (newWells && newWells.length > 0) {
     gwls.value = Object.values(newWells.flatMap(well => 
-      well.parameters.filter(param => param.parameter_name === 1).map(param => param.value)
+      well?.parameters?.filter(param => param.parameter_name === 1).map(param => param.value)
     ));
     rain.value = Object.values(newWells.flatMap(well => 
-      well.parameters.filter(param => param.parameter_name === 2).map(param => param.value)
+      well?.parameters?.filter(param => param.parameter_name === 2).map(param => param.value)
     ));
     avt.value = Object.values(newWells.flatMap(well => 
-      well.parameters.filter(param => param.parameter_name === 3).map(param => param.value)
+      well?.parameters?.filter(param => param.parameter_name === 3).map(param => param.value)
     ));
     numbers.value = newWells.map(well => well.number)
     console.log('Filtered Parameters:', gwls.value);

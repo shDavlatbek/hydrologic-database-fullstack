@@ -10,7 +10,7 @@
                 Quduqlarning yer osti suvi sathi | Oy bo'yicha
               </h3>
               <div class="card-actions">
-                <DatePicker v-model:model-value="selectedDate" :min-date="startDate"  @update:modelValue="updateWells" size="small" placeholder="Oyni tanlash" showIcon iconDisplay="input"
+                <DatePicker v-model:model-value="selectedDate" :min-date="startDate" :max-date="endDate" @update:modelValue="updateWells" size="small" placeholder="Oyni tanlash" showIcon iconDisplay="input"
                   view="month" dateFormat="MM yy" />
               </div>
             </div>
@@ -111,7 +111,7 @@ export default {
     wellsData() {
       return this.wells.map(well => ({
         number: well.number,
-        gwl: well.parameters.find(p => p.parameter_name === 1).value,
+        gwl: well.parameters?.find(p => p.parameter_name === 1)?.value ?? '--',
       }));
     },
     localText() {

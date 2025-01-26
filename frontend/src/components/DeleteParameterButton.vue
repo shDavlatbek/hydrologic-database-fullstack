@@ -1,13 +1,17 @@
 <template>
   <button class="btn btn-danger p-0" @click="deleteRow">
     <IconTrash class="icon m-0" stroke="2" />
-    {{ props.value }}
   </button>
 </template>
 
 <script setup>
 import { IconTrash } from '@tabler/icons-vue';
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { deleteParameter } from '@/api/geo';
+import { dateWithoutTimezone } from '@/helpers';
+
+const route = useRoute();
 
 const props = defineProps({
   value: {
@@ -20,7 +24,15 @@ const props = defineProps({
   }
 });
 
-const deleteRow = () => {
-  console.log(props.row);
+const deleteRow = async () => {
+  // Convert 'YYYY/MM' to datetime
+  const dateTime = new Date(`${props.row.date}/01`);
+  await deleteParameter(wellNumber.value, dateWithoutTimezone(dateTime));
 };
+
+
+const wellNumber = computed(() => {
+  return route.params?.number;
+});
+
 </script>
