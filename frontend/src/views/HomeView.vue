@@ -59,17 +59,10 @@
             
           </div>
         </div> -->
-        <div class="col-12 col-lg-6">
+        <div class="col-12">
           <div class="card mb-4">
             <div class="card-body pt-5">
-              <AQIChart :stations="wells" :selected-hour="selectedHour" />
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-lg-6">
-          <div class="card mb-4">
-            <div class="card-body pt-5">
-              <PM25Chart :stations="wells" :selected-hour="selectedHour" />
+              <HomePageChart :wells="wells" />
             </div>
           </div>
         </div>
@@ -84,6 +77,7 @@ import DatePicker from 'primevue/datepicker';
 import AQIMap from '@/components/AQIMap.vue';
 import { dateWithoutTimezone, dateToISOString } from '@/helpers';
 import DataTable from '@/components/DataTable.vue';
+import HomePageChart from '@/components/HomePageChart.vue';
 export default {
   data() {
     return {
@@ -96,7 +90,7 @@ export default {
     };
   },
   components: {
-    AQIMap, DatePicker, DataTable
+    AQIMap, DatePicker, DataTable, HomePageChart
   },
   methods: {
     async updateWells(date) {

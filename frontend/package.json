@@ -21,6 +21,7 @@
     "datatables.net-responsive-dt": "^3.0.3",
     "datatables.net-vue3": "^3.0.2",
     "date-fns": "^4.1.0",
+    "highcharts": "^12.1.2",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "list.js": "^2.3.1",
