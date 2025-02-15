@@ -129,10 +129,10 @@ export default {
           name: 'Gidromeliorativ',
           link: '/melio'
         },
-        {
-          name: 'Gidrometeorologik',
-          link: '/meteo'
-        },
+        // {
+        //   name: 'Gidrometeorologik',
+        //   link: '/meteo'
+        // },
         {
           name: 'Litologiya',
           link: '/lithology'
