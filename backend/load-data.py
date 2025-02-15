@@ -77,15 +77,42 @@ def geo_well_parameters():
             (geo_well_parameter['well'], geo_well_parameter['parameter_name'], geo_well_parameter['date'], geo_well_parameter['value'])
         )
 
+def melio_stations(): 
+    melio_stations = json.load(open('data/melio_stations.json'))
+    for melio_station in melio_stations:
+        cursor.execute(
+            'INSERT OR IGNORE INTO melio_station (id, name) VALUES (?, ?)',
+            (melio_station['id'], melio_station['name'])
+        )
+        
+def melio_well_types(): 
+    melio_well_types = json.load(open('data/melio_well_types.json'))
+    for melio_well_type in melio_well_types:
+        cursor.execute(
+            'INSERT OR IGNORE INTO melio_welltype (id, name) VALUES (?, ?)',
+            (melio_well_type['id'], melio_well_type['name'])
+        )
+        
+def melio_organizations(): 
+    melio_organizations = json.load(open('data/melio_organizations.json'))
+    for melio_organization in melio_organizations:
+        cursor.execute(
+            'INSERT OR IGNORE INTO melio_organization (id, name) VALUES (?, ?)',
+            (melio_organization['id'], melio_organization['name'])
+        )
+        
 if __name__ == '__main__':
-    regions()
-    districts()
-    locations()
-    geo_organizations()
-    geo_stations()
-    geo_well_types()
-    geo_well_parameters_names()
-    geo_wells()
-    geo_well_parameters()
+    # regions()
+    # districts()
+    # locations()
+    # geo_organizations()
+    # geo_stations()
+    # geo_well_types()
+    # geo_well_parameters_names()
+    # geo_wells()
+    # geo_well_parameters()
+    # melio_stations()
+    # melio_well_types()
+    melio_organizations()
     db.commit()
     db.close()

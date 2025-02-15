@@ -69,3 +69,25 @@ export const sendConfirmedExcelData = async (well_number, data) => {
 export const deleteParameter = async (well_number, date) => {
   return (await reqApi(`/geo/parameter/delete`, {well: well_number, date: date}, "POST")).data;
 };
+
+export const calculateParameters = async (well_number, parameter_name, start_date, end_date) => {
+  return (await reqApi(`/geo/parameter/calculations`, {well: well_number, parameter_name: parameter_name, start_date: start_date, end_date: end_date}, "GET")).data;
+};
+
+export const getHeatmap = async (well_number, parameter_name, start_date, end_date) => {
+  const response = await api.get('/geo/parameter/heatmap', {
+    params: {
+      well: well_number,
+      start_date: start_date,
+      end_date: end_date,
+      parameter_name: parameter_name
+    },
+    responseType: 'blob', // Important to tell axios to treat the response as binary data
+    // If authentication is required, add headers like:
+    // headers: { Authorization: 'Bearer <your_token>' }
+  });
+  // Convert blob to a local URL
+  return URL.createObjectURL(response.data);
+};
+
+

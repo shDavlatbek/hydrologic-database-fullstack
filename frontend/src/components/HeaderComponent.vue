@@ -132,6 +132,10 @@ export default {
         {
           name: 'Gidrometeorologik',
           link: '/meteo'
+        },
+        {
+          name: 'Litologiya',
+          link: '/lithology'
         }
       ]
     }

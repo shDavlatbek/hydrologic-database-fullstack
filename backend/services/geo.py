@@ -1,8 +1,10 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import and_, extract, select
 from schemas.common import NameFieldAdd
 from schemas.geo import AddGeoWell, Parameter, ParameterQuery
 from utils.unitofwork import IUnitOfWork
+from models.geo import Parameter as ParameterModel
 
 
 class GeoService:
@@ -92,7 +94,7 @@ class ParameterService:
                 return await uow.parameter.find_all(filters=filters)
             else:
                 return await uow.parameter.find_all()
-
+        
     async def predict_parameters(
         self, 
         uow: IUnitOfWork, 

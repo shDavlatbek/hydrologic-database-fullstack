@@ -127,28 +127,27 @@ const updateMarkers = () => {
 
       // Add circle with opacity
 
+      if(well.x && well.y) {
+        const marker = L.marker([well.y, well.x], { icon })
+          .bindPopup(`
+            <strong>${well?.number}</strong><br>
+            GWL (m): ${gwl ? gwl : '?'}<br>
+            <a href="javascript:void(0)" class="well-link" data-well-number="${well.number}">Batafsil</a>
+          `);
 
-      const marker = L.marker([well.y, well.x], { icon })
-        .bindPopup(`
-          <strong>${well?.number}</strong><br>
-          GWL (m): ${gwl ? gwl : '?'}<br>
-          <a href="javascript:void(0)" class="well-link" data-well-number="${well.number}">Batafsil</a>
-        `);
+        // Add click handler after popup is created
+        marker.on('popupopen', () => {
+          const link = marker.getPopup().getElement().querySelector('.well-link');
+          if (link) {
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              router.push({ name: 'GeoSingle', params: { number: link.dataset.wellNumber } });
+            });
+          }
+        });
 
-      // Add click handler after popup is created
-      marker.on('popupopen', () => {
-        const link = marker.getPopup().getElement().querySelector('.well-link');
-        if (link) {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            router.push({ name: 'GeoSingle', params: { number: link.dataset.wellNumber } });
-          });
-        }
-      });
-
-      markers.addLayer(marker);
-
-
+        markers.addLayer(marker);
+      }
     });
     map.addLayer(markers);
   }

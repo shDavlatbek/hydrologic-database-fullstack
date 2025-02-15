@@ -13,122 +13,122 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="datagrid">
-              <div class="datagrid-item">
-                <div class="datagrid-title">
-                  <span :class="{'required': editMode}">Quduq raqami</span>
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">
+                    <span :class="{'required': editMode}">Quduq raqami</span>
+                  </div>
+                  <div class="datagrid-content">
+                    <template v-if="editMode">
+                      <input type="text" required class="form-control form-control-sm" v-model="wellForm.number" />
+                    </template>
+                    <template v-else>{{ well?.number ? well?.number : noInfoMes }}</template>
+                  </div>
                 </div>
-                <div class="datagrid-content">
-                  <template v-if="editMode">
-                    <input type="text" required class="form-control form-control-sm" v-model="wellForm.number" />
-                  </template>
-                  <template v-else>{{ well?.number ? well?.number : noInfoMes }}</template>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Stansiya nomi</div>
+                  <div class="datagrid-content">
+                    <template v-if="editMode">
+                      <select class="form-select form-select-sm" v-model="wellForm.station">
+                        <option value="-1">---------</option>
+                        <option v-for="one in stations" :key="one.id" :value="one.id">{{ one.name }}</option>
+                      </select>
+                    </template>
+                    <template v-else>{{ well?.station ? well?.station?.name : noInfoMes }}</template>
+                  </div>
                 </div>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">Stansiya nomi</div>
-                <div class="datagrid-content">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Viloyat</div>
+                  <div class="datagrid-content">
+                    <template v-if="editMode">
+                      <select class="form-select form-select-sm" v-model="wellForm.region" @change="changeDistricts">
+                        <option value="-1">---------</option>
+                        <option v-for="one in regions" :key="one.id" :value="one.id">{{ one.name }}</option>
+                      </select>
+                    </template>
+                    <template v-else>{{ well?.region ? well?.region?.name : noInfoMes }}</template>
+                  </div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Tuman</div>
+                  <div class="datagrid-content">
+                    <template v-if="editMode">
+                      <select class="form-select form-select-sm" v-model="wellForm.district">
+                        <option value="-1">---------</option>
+                        <option v-for="one in districts" :key="one.id" :value="one.id">{{ one.name }}</option>
+                      </select>
+                    </template>
+                    <template v-else>{{ well?.district ? well?.district?.name : noInfoMes }}</template>
+                  </div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Joylashuv o'rni</div>
+                  <div class="datagrid-content">
+                    <template v-if="editMode">
+                      <select class="form-select form-select-sm" v-model="wellForm.location">
+                        <option value="-1">---------</option>
+                        <option v-for="one in locations" :key="one.id" :value="one.id">{{ one.name }}</option>
+                      </select>
+                    </template>
+                    <template v-else>{{ well?.location ? well?.location?.name : noInfoMes }}</template>
+                  </div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Quduq turi</div>
                   <template v-if="editMode">
-                    <select class="form-select form-select-sm" v-model="wellForm.station">
+                    <select class="form-select form-select-sm" v-model="wellForm.well_type">
                       <option value="-1">---------</option>
-                      <option v-for="one in stations" :key="one.id" :value="one.id">{{ one.name }}</option>
+                      <option v-for="one in wellTypes" :key="one.id" :value="one.id">{{ one.name }}</option>
                     </select>
                   </template>
-                  <template v-else>{{ well?.station ? well?.station?.name : noInfoMes }}</template>
+                  <template v-else>{{ well?.well_type ? well?.well_type?.name : noInfoMes }}</template>
                 </div>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">Viloyat</div>
-                <div class="datagrid-content">
-                  <template v-if="editMode">
-                    <select class="form-select form-select-sm" v-model="wellForm.region" @change="changeDistricts">
-                      <option value="-1">---------</option>
-                      <option v-for="one in regions" :key="one.id" :value="one.id">{{ one.name }}</option>
-                    </select>
-                  </template>
-                  <template v-else>{{ well?.region ? well?.region?.name : noInfoMes }}</template>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Mo'ljal</div>
+                  <div class="datagrid-content">
+                    <template v-if="editMode">
+                      <input type="text" class="form-control form-control-sm" v-model="wellForm.address" />
+                    </template>
+                    <template v-else>{{ well?.address?.name ? well?.address?.name : noInfoMes }}</template>
+                  </div>
                 </div>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">Tuman</div>
-                <div class="datagrid-content">
-                  <template v-if="editMode">
-                    <select class="form-select form-select-sm" v-model="wellForm.district">
-                      <option value="-1">---------</option>
-                      <option v-for="one in districts" :key="one.id" :value="one.id">{{ one.name }}</option>
-                    </select>
-                  </template>
-                  <template v-else>{{ well?.district ? well?.district?.name : noInfoMes }}</template>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Tashkilot</div>
+                  <div class="datagrid-content">
+                    <template v-if="editMode">
+                      <select class="form-select form-select-sm" v-model="wellForm.organization">
+                        <option value="-1">---------</option>
+                        <option v-for="one in organizations" :key="one.id" :value="one.id">{{ one.name }}</option>
+                      </select>
+                    </template>
+                    <template v-else>{{ well?.organization ?  well?.organization?.name : noInfoMes }}</template>
+                  </div>
                 </div>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">Joylashuv o'rni</div>
-                <div class="datagrid-content">
-                  <template v-if="editMode">
-                    <select class="form-select form-select-sm" v-model="wellForm.location">
-                      <option value="-1">---------</option>
-                      <option v-for="one in locations" :key="one.id" :value="one.id">{{ one.name }}</option>
-                    </select>
-                  </template>
-                  <template v-else>{{ well?.location ? well?.location?.name : noInfoMes }}</template>
-                </div>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">Quduq turi</div>
-                <template v-if="editMode">
-                  <select class="form-select form-select-sm" v-model="wellForm.well_type">
-                    <option value="-1">---------</option>
-                    <option v-for="one in wellTypes" :key="one.id" :value="one.id">{{ one.name }}</option>
-                  </select>
-                </template>
-                <template v-else>{{ well?.well_type ? well?.well_type?.name : noInfoMes }}</template>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">Mo'ljal</div>
-                <div class="datagrid-content">
-                  <template v-if="editMode">
-                    <input type="text" class="form-control form-control-sm" v-model="wellForm.address" />
-                  </template>
-                  <template v-else>{{ well?.address?.name ? well?.address?.name : noInfoMes }}</template>
-                </div>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">Tashkilot</div>
-                <div class="datagrid-content">
-                  <template v-if="editMode">
-                    <select class="form-select form-select-sm" v-model="wellForm.organization">
-                      <option value="-1">---------</option>
-                      <option v-for="one in organizations" :key="one.id" :value="one.id">{{ one.name }}</option>
-                    </select>
-                  </template>
-                  <template v-else>{{ well?.organization ?  well?.organization?.name : noInfoMes }}</template>
-                </div>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">[X, Y]</div>
-                <div class="datagrid-content">
-                  <template v-if="editMode">
-                    <div class="row">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">[X, Y]</div>
+                  <div class="datagrid-content">
+                    <template v-if="editMode">
+                      <div class="row">
+                        <div class="col-6">
+                        <input type="text" class="form-control form-control-sm" v-model="wellForm.x" />
+                      </div>
                       <div class="col-6">
-                      <input type="text" class="form-control form-control-sm" v-model="wellForm.x" />
-                    </div>
-                    <div class="col-6">
-                      <input type="text" class="form-control form-control-sm" v-model="wellForm.y" />
-                    </div>
-                    </div>
-                  </template>
-                  <template v-else>{{ well?.x ? well?.x : noInfoMes }}, {{ well?.y ? well?.y : noInfoMes }}</template>
+                        <input type="text" class="form-control form-control-sm" v-model="wellForm.y" />
+                      </div>
+                      </div>
+                    </template>
+                    <template v-else>{{ well?.x ? well?.x : noInfoMes }}, {{ well?.y ? well?.y : noInfoMes }}</template>
+                  </div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Qo'shilgan vaqti</div>
+                  <div class="datagrid-content">{{ well?.created_at ? format(new Date(well?.created_at), 'dd.MM.yyyy HH:mm:ss') : noInfoMes }}</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">O'zgartirilgan vaqti</div>
+                  <div class="datagrid-content">{{ well?.updated_at ? format(new Date(well?.updated_at), 'dd.MM.yyyy HH:mm:ss') : noInfoMes }}</div>
                 </div>
               </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">Qo'shilgan vaqti</div>
-                <div class="datagrid-content">{{ well?.created_at ? format(new Date(well?.created_at), 'dd.MM.yyyy HH:mm:ss') : noInfoMes }}</div>
-              </div>
-              <div class="datagrid-item">
-                <div class="datagrid-title">O'zgartirilgan vaqti</div>
-                <div class="datagrid-content">{{ well?.updated_at ? format(new Date(well?.updated_at), 'dd.MM.yyyy HH:mm:ss') : noInfoMes }}</div>
-              </div>
-            </div>
           </div>
           <div class="card-footer d-flex" v-if="editMode">
             <button class="btn btn-sm btn-danger rounded-2 me-2 ms-auto px-2 py-1" @click="editMode = false; setWellForm(well)">
@@ -190,8 +190,9 @@
             </div>
           </div>
         </div>
+        
         <!-- PARAMETERS -->
-        <div class="col">
+        <div class="col-12">
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">Parameterlar</h3>
@@ -214,6 +215,150 @@
           <DataTable :data="params" :columns="param_names" />
         </div>
         
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Mann Kendall</h3>
+              <div class="ms-auto d-flex align-items-center gap-2">
+                
+                
+                <DatePicker v-model:model-value="calculationStartDate" :min-date="paramStartDate" :max-date="paramEndDate" size="small" placeholder="Oyni tanlash" showIcon iconDisplay="input"
+                  view="month" dateFormat="MM yy" />
+                  —
+                <DatePicker v-model:model-value="calculationEndDate" :min-date="paramStartDate" :max-date="paramEndDate" size="small" placeholder="Oyni tanlash" showIcon iconDisplay="input"
+                  view="month" dateFormat="MM yy" />
+                <button class="btn btn-primary d-none d-sm-inline-block" 
+                  aria-label="Hisoblash"
+                  @click="calculateUpdate">
+                  <IconCalculator class="icon" stroke="2" />
+                  Hisoblash
+                </button>
+                <button class="btn btn-primary d-sm-none btn-icon" 
+                  aria-label="Hisoblash"
+                  @click="calculateUpdate">
+                  <IconCalculator class="icon" stroke="2" />
+                </button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6 border-end">
+                <apexchart
+              height="350"
+              :options="yearlyAvgOptions"
+              :series="yearlyAvgSeries"
+            ></apexchart>
+
+            <!-- Amplitude Chart -->
+            
+              </div>
+              <div class="col-6">
+                <apexchart
+              height="350"
+              :options="amplitudeOptions"
+              :series="amplitudeSeries"
+            ></apexchart>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title">Heatmap</h3>
+                    <div class="d-flex w-100 justify-content-center">
+                      <img :src="heatmapImage" alt="Heatmap" class="img-fluid" style="max-height: 500px;">
+                    </div>
+                    <div class="d-flex w-100 justify-content-end">
+                      <a :href="heatmapImage" download="heatmap.png">
+                        <button class="btn btn-primary">Yuklash</button>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-header">
+              <h3 class="card-title">Butun davr uchun hisobot</h3>
+            </div>
+            <div class="card-body my-3">
+              <!-- all_time_avg
+: 
+3.41
+all_time_cv
+: 
+"3.03%"
+all_time_max
+: 
+6.15
+all_time_min
+: 
+1.64
+all_time_std_dev
+: 
+0.1
+all_time_variance
+: 
+0.03 -->
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">
+                    <span>Maximum sathi</span>
+                  </div>
+                  <div class="datagrid-content">
+                    {{ calculations?.all_time_max ? calculations?.all_time_max : noInfoMes }}
+                  </div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">
+                    <span>Minimum sathi</span>
+                  </div>
+                  <div class="datagrid-content">
+                    {{ calculations?.all_time_min ? calculations?.all_time_min : noInfoMes }}
+                  </div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">O'rtacha Dispersiya</div>
+                  <div class="datagrid-content">
+                    {{ calculations?.all_time_std_dev ? calculations?.all_time_std_dev : noInfoMes }}
+                  </div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">O'zgarish koeffitsienti</div>
+                  <div class="datagrid-content">
+                    {{ calculations?.all_time_variance ? calculations?.all_time_variance : noInfoMes }}
+                  </div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Standart og'ish</div>
+                  <div class="datagrid-content">
+                    {{ calculations?.all_time_cv ? calculations?.all_time_cv : noInfoMes }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table card-table table-vcenter text-nowrap datatable">
+                <!-- Sticky Header -->
+                <thead class="sticky-top">
+                  <tr>
+                    <th v-for="stat in [{year: 'Oy'},...mannKendall]" :key="stat.year">
+                      {{ stat.year }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="month in months" :key="month.key">
+                    <td>{{ month.name }}</td>
+                    <!-- Loop through each mannKendall statistic to display the value for that month -->
+                    <td v-for="stat in mannKendall" :key="stat.year">
+                      {{ stat[month.key] }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+          </div>
+        </div>
       </div>
     </div>
     
@@ -314,23 +459,26 @@
 </template>
 
 <script>
-import { getWell, getParameterNames, getParameter, getPredictions, getNewWellForm, editWell, uploadFile, sendExcelData, sendConfirmedExcelData } from '@/api/geo';
+import { getWell, getParameterNames, getParameter, getPredictions, 
+  getNewWellForm, editWell, calculateParameters, uploadFile, sendExcelData, sendConfirmedExcelData, getHeatmap } from '@/api/geo';
 import { getRegions, getDistricts } from '@/api/common';
 import { ref } from 'vue';
 import { format } from 'date-fns';
-import { IconPencil, IconPlus, IconX, IconCheck, IconUpload } from '@tabler/icons-vue'
+import { IconPencil, IconPlus, IconX, IconCheck, IconUpload, IconCalculator } from '@tabler/icons-vue'
 import ModalForm from '@/components/ModalFormComponent.vue';
 import ModalAlert from '@/components/ModalAlert.vue';
 import DataTable from '@/components/DataTable.vue';
 import DeleteParameterButton from '@/components/DeleteParameterButton.vue';
 import RemoveRowButton from '@/components/RemoveRowButton.vue';
+import DatePicker from 'primevue/datepicker';
+import { dateWithoutTimezone, dateToISOString } from '@/helpers';
 const uz = require('../plugins/apexchartUzLocale.json')
 
 export default {
   components: {
     // eslint-disable-next-line
     DeleteParameterButton,
-    IconPencil, IconPlus, IconX, IconCheck, IconUpload, ModalForm, DataTable, ModalAlert, RemoveRowButton
+    IconPencil, IconPlus, IconX, IconCheck, IconUpload, IconCalculator, ModalForm, DataTable, ModalAlert, RemoveRowButton, DatePicker
   },
   data: () => ({
     well: null,
@@ -374,6 +522,26 @@ export default {
     dublicateExistMsg: '',
     confirmOverwrite: false,
     validationError: false,
+    calculations: [],
+    paramStartDate: null,
+    paramEndDate: null,
+    calcData: [],
+    mannKendall: [],
+    heatmapImage: null,
+    months: [
+        { key: "I", name: "Yan" },
+        { key: "II", name: "Fev" },
+        { key: "III", name: "Mart" },
+        { key: "IV", name: "Aprel" },
+        { key: "V", name: "May" },
+        { key: "VI", name: "Iyun" },
+        { key: "VII", name: "Iyul" },
+        { key: "VIII", name: "Avgust" },
+        { key: "IX", name: "Sent" },
+        { key: "X", name: "Okt" },
+        { key: "XI", name: "Noy" },
+        { key: "XII", name: "Dek" }
+      ],
   }),
 
 
@@ -488,6 +656,66 @@ export default {
           x: {
             format: "yyyy/MM",
           },
+        },
+      };
+    },
+
+    yearlyAvgSeries() {
+      return [
+        {
+          name: `Yillik o’rtacha ${this.well.number}`,
+          data: this.calcData.map((item) => item.yearly_avg),
+        },
+      ];
+    },
+    yearlyAvgOptions() {
+      return {
+        chart: {
+          id: 'yearlyAvgChart',
+          type: 'area',
+        },
+        xaxis: {
+          categories: this.calcData.map((item) => item.year),
+          title: {
+            text: 'Yil',
+          },
+        },
+        title: {
+          text: 'Yillik o’rtacha',
+          align: 'center',
+        },
+        dataLabels: {
+          enabled: false
+        },
+      };
+    },
+    // Series and options for the amplitude chart
+    amplitudeSeries() {
+      return [
+        {
+          name: `Amplituda ${this.well.number}`,
+          data: this.calcData.map((item) => item.amplitude),
+        },
+      ];
+    },
+    amplitudeOptions() {
+      return {
+        chart: {
+          id: 'amplitudeChart',
+          type: 'area',
+        },
+        xaxis: {
+          categories: this.calcData.map((item) => item.year),
+          title: {
+            text: 'Yil',
+          },
+        },
+        title: {
+          text: 'Amplituda',
+          align: 'center',
+        },
+        dataLabels: {
+          enabled: false
         },
       };
     },
@@ -716,6 +944,20 @@ export default {
     removeRow(row){
       this.excelData.splice(row, 1);
       this.confirmOverwrite = false;
+    },
+    async calculateUpdate(){
+      try{
+        this.calculations = await calculateParameters(Number(this.wellNumber), 1, dateWithoutTimezone(this.calculationStartDate), dateWithoutTimezone(this.calculationEndDate));
+        this.calcData = this.calculations.data.filter(item => typeof item.year === 'number');
+        this.mannKendall = this.calculations.data.filter(item => typeof item.year !== 'number'); 
+        this.heatmapImage = await getHeatmap(this.wellNumber, 1, dateWithoutTimezone(this.calculationStartDate), dateWithoutTimezone(this.calculationEndDate));
+      }
+      catch(error){
+        this.modalAlert.openModal();
+        this.modalTitle = "Hisoblash uchun 1 yildan ortiq intervalda ma'lumot kerak";
+        this.modalDesc = ``;
+        this.modalType = 'danger';
+      }
     }
   },
 
@@ -725,17 +967,29 @@ export default {
       try {
         this.well = await getWell(this.wellNumber);
         this.parameter_names = await getParameterNames();
-        this.addEmptyRow();
+        
         this.parameters = await getParameter(this.wellNumber);
         this.regions = await getRegions();
         const response = await getNewWellForm();
+        this.calculations = await calculateParameters(Number(this.wellNumber), 1, this.parameters[0].date, this.parameters[this.parameters.length - 1].date);
+        this.setGwlForecastOptionsSeries(await getPredictions(this.wellNumber));
+        this.heatmapImage = await getHeatmap(this.wellNumber, 1, this.parameters[0].date, this.parameters[this.parameters.length - 1].date);
+
+        await this.$nextTick();
+
+        this.addEmptyRow();
         this.wellTypes = response.well_types;
         this.organizations = response.organizations;
         this.locations = response.locations;
         this.stations = response.stations;
+        this.calcData = this.calculations.data.filter(item => typeof item.year === 'number');
+        this.mannKendall = this.calculations.data.filter(item => typeof item.year !== 'number'); 
         this.setGwlOptionsSeries(this.parameters);
-        this.setGwlForecastOptionsSeries(await getPredictions(this.wellNumber));
         this.setWellForm(this.well);
+        this.paramStartDate = dateToISOString(this.parameters[0].date);
+        this.paramEndDate = dateToISOString(this.parameters[this.parameters.length - 1].date);
+        this.calculationStartDate = dateToISOString(this.parameters[0].date);
+        this.calculationEndDate = dateToISOString(this.parameters[this.parameters.length - 1].date);
       } catch (error) {
         console.error('Error fetching well data:', error);
         this.modalAlert.openModal();

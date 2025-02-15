@@ -1,15 +1,27 @@
+import copy
 from datetime import datetime
 import json
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, File, Response, UploadFile
+from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from api.auth import fastapi_users
+
+import matplotlib.pyplot as plt
+import matplotlib
+import seaborn as sns
+import io
 
 from api.dependencies import UOWDep
 from prediction.predictor import predict
 from services.geo import GeoService, ParameterService, ParameterNameService
-from schemas.geo import AddGeoWell, Parameter, ParameterQuery, ParameterAdd
+from schemas.geo import AddGeoWell, Parameter, ParameterCalculations, ParameterQuery, ParameterAdd
 from typing import Annotated, Optional
 from dateutil.relativedelta import relativedelta
+
+from pymannkendall import original_test as mk_test
+import pandas as pd
+import numpy as np
+from utils.calculations import calculate_statistics
 
 
 router = APIRouter(
@@ -64,6 +76,142 @@ async def  get_parameters(
 ):
     filters = filters.model_dump(exclude_none=True)
     return await ParameterService().get_parameters(uow, filters)
+
+
+@router.get("/parameter/calculations")
+async def edit_well(
+    uow: UOWDep,
+    filters: Annotated[ParameterCalculations, Query()],
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    print(filters.model_dump())
+    parameters = await ParameterService().get_parameters(uow, filters.model_dump())
+    parameters = [x.model_dump() for x in parameters]
+    df = pd.DataFrame(parameters)
+
+    # print(df)
+
+    # Convert the date column to datetime and extract year and month
+    df['date'] = pd.to_datetime(df['date'])
+    df['year'] = df['date'].dt.year
+    df['month'] = df['date'].dt.month
+
+    # Map month numbers to Roman numerals
+    month_mapping = {
+        1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI',
+        7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X', 11: 'XI', 12: 'XII'
+    }
+    df['month_roman'] = df['month'].map(month_mapping)
+
+    # Pivot the DataFrame so that rows are years and columns are the months
+    pivot_df = df.pivot(index='year', columns='month_roman', values='value').reset_index()
+
+    # Optionally, reindex the columns to ensure the proper order
+    cols_order = ['year', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
+    pivot_df = pivot_df.reindex(columns=cols_order)
+
+    
+    # Convert the pivot table to a list of dictionaries
+    df = pivot_df
+    filtered_df = copy.deepcopy(df)
+    stats, mk_results, cv = calculate_statistics(df)
+
+    variance_row = {'year': 'Variance', **stats['Variance']}
+    std_dev_row = {'year': 'Standard Deviation', **stats['Standard Deviation']}
+    cv_row = {'year': 'Coefficient of Variation', **cv}
+    
+    variance_row_df = pd.DataFrame([variance_row])
+    std_dev_row_df = pd.DataFrame([std_dev_row])
+    cv_row_df = pd.DataFrame([cv_row])
+    mk_rows = [pd.DataFrame([{**{'year': metric}, **values}]) for metric, values in mk_results.items()]
+    
+    # Combine dataframes with stats and Mann-Kendall test results
+    
+    all_time_stats = {
+        'min': df[['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']].min().min(),
+        'max': df[['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']].max().max(),
+        'avg': df[['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']].mean().mean(),
+        'variance': df[['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']].var().var(),
+        'std_dev': df[['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']].std().std(),
+        'cv': str(round((df[['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']].std().std() / 
+                          df[['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']].mean().mean() * 100), 2)) + '%'
+    }
+    
+    
+    
+    df = pd.concat([df, variance_row_df, std_dev_row_df, cv_row_df, *mk_rows], ignore_index=True)
+
+    return {
+        'success': True,
+        'data': json.loads(df.to_json(orient='records')),
+        # 'start_year': start_year,
+        # 'end_year': end_year,
+        # 'start_month': start_month,
+        # 'end_month': end_month,
+        'all_time_min': all_time_stats['min'],
+        'all_time_max': all_time_stats['max'],
+        'all_time_avg': round(all_time_stats['avg'], 2),
+        'all_time_variance': round(all_time_stats['variance'], 2),
+        'all_time_std_dev': round(all_time_stats['std_dev'], 2),
+        'all_time_cv': all_time_stats['cv'],
+        'filtered_df': json.loads(filtered_df.to_json(orient='records'))
+    }
+    
+    
+@router.get("/parameter/heatmap")
+async def edit_well(
+    uow: UOWDep,
+    filters: Annotated[ParameterCalculations, Query()],
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    filters = filters.model_dump()
+    parameters = await ParameterService().get_parameters(uow, filters)
+    parameters = [x.model_dump() for x in parameters]
+    df = pd.DataFrame(parameters)
+
+    print(df)
+
+    # Convert the date column to datetime and extract year and month
+    df['date'] = pd.to_datetime(df['date'])
+    df['year'] = df['date'].dt.year
+    df['month'] = df['date'].dt.month
+
+    # Map month numbers to Roman numerals
+    month_mapping = {
+        1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI',
+        7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X', 11: 'XI', 12: 'XII'
+    }
+    df['Oylar'] = df['month'].map(month_mapping)
+
+    # Pivot the DataFrame so that rows are years and columns are the months
+    pivot_df = df.pivot(index='year', columns='Oylar', values='value').reset_index()
+
+    # Optionally, reindex the columns to ensure the proper order
+    cols_order = ['year', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
+    pivot_df = pivot_df.reindex(columns=cols_order)
+    
+    df = pivot_df
+    matplotlib.use('agg')
+    plt.figure(figsize=(len(df), 8), dpi=480)        
+    try:
+        sns.heatmap(df.set_index('year').T, annot=True, fmt=".1f", cmap="Blues", cbar=True,) # xticklabels=True, yticklabels=True  
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    # title and labels
+    plt.title('Heatmap - ' + str(filters['well']))
+    plt.xlabel('Yillar')
+    plt.ylabel('Oylar')        
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', dpi=480)
+    plt.close()
+    buffer.seek(0)
+    
+    return Response(
+        content=buffer.getvalue(),
+        media_type="image/png",
+        headers={"Content-Disposition": 'attachment; filename="heatmap.png"'}
+    )
+    
 
 
 @router.get("/parameter/predict")

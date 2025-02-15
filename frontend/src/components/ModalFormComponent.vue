@@ -104,8 +104,7 @@ export default {
       document.getElementById('close-modal-form').click();
     },
     resetForm() {
-      const form = document.querySelector(`#${this.modalId} form`);
-      form.reset();
+      this.resetButtonFunction();
     }
   }
 }
