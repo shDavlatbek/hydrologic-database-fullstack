@@ -69,7 +69,7 @@ const chartOptions = ref({
       animateGradually: { enabled: true, delay: 150 }
     }
   },
-  dataLabels: { enabled: false },
+  // dataLabels: { enabled: false },
   stroke: {
     curve: 'smooth',
     width: 2
@@ -148,19 +148,19 @@ const chartOptions = ref({
 // All series are now rendered as an area chart.
 const series = ref([
   {
-    name: 'Температура (°C)',
+    name: 'Temperatura (°C)',
     type: 'area',
     data: avt.value,
     color: tempColor(avt.value)
   },
   {
-    name: 'Осадки (мм)',
+    name: "Yog'ingarchilik (mm)",
     type: 'area',
     data: rain.value,
     color: 'rgba(51, 84, 170, 1)'
   },
   {
-    name: 'GWL (м)',
+    name: 'Yer osti suv sathi (m)',
     type: 'area',
     data: gwls.value,
     color: 'rgb(223, 133, 0)'
@@ -184,19 +184,19 @@ watch(
       numbers.value = newWells.map(well => well.number)
       series.value = [
         {
-          name: 'Температура (°C)',
+          name: 'Temperatura (°C)',
           type: 'area',
           data: avt.value,
           color: tempColor(avt.value)
         },
         {
-          name: 'Осадки (мм)',
+          name: "Yog'ingarchilik (mm)",
           type: 'area',
           data: rain.value,
           color: 'rgba(51, 84, 170, 1)'
         },
         {
-          name: 'GWL (м)',
+          name: 'Yer osti suv sathi (m)',
           type: 'area',
           data: gwls.value,
           color: 'rgb(223, 133, 0)'

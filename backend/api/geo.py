@@ -221,17 +221,17 @@ async def get_predict(
     user=Depends(fastapi_users.current_user(active=True))
 ):
     
-    # dates, gwl, rain, mint, maxt, avgt = await ParameterService().predict_parameters(uow, well_number)
-    # predictions = predict(
-    #     dates,
-    #     well_number,
-    #     gwl, 
-    #     rain, 
-    #     mint, 
-    #     maxt, 
-    #     avgt
-    # )
-    # return {'dates': dates[12:], 'predictions': predictions}
+    dates, gwl, rain, mint, maxt, avgt = await ParameterService().predict_parameters(uow, well_number)
+    predictions = predict(
+        dates,
+        well_number,
+        gwl, 
+        rain, 
+        mint, 
+        maxt, 
+        avgt
+    )
+    return {'dates': dates[12:], 'predictions': predictions}
     return {'dates': [], 'predictions': []}
 
 

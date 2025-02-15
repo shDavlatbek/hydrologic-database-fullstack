@@ -218,7 +218,7 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Mann Kendall</h3>
+              <h3 class="card-title">Statistik tahlil</h3>
               <div class="ms-auto d-flex align-items-center gap-2">
                 
                 
