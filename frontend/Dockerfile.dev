@@ -6,13 +6,13 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy application source code
 COPY . .
 
 # Expose the development server port
-EXPOSE 8080
+EXPOSE 8199
 
 # Command to start the development server
 CMD ["npm", "run", "serve"]

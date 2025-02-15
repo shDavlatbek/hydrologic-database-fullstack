@@ -2,8 +2,9 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile.dev
     ports:
-      - "8080:8080" # Expose port 80 from the container to 3000 on the host
+      - "8199:8199" # Expose port 80 from the container to 3000 on the host
     env_file:
       - ./frontend/.env
     networks:
@@ -13,7 +14,7 @@ services:
     build:
       context: ./backend
     ports:
-      - "8000:8000" # Expose port 8000
+      - "8198:8198" # Expose port 8000
     env_file:
       - ./backend/.env
     volumes:
