@@ -69,7 +69,7 @@ const chartOptions = ref({
       animateGradually: { enabled: true, delay: 150 }
     }
   },
-  // dataLabels: { enabled: false },
+  dataLabels: { enabled: false },
   stroke: {
     curve: 'smooth',
     width: 2
