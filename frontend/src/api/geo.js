@@ -90,4 +90,10 @@ export const getHeatmap = async (well_number, parameter_name, start_date, end_da
   return URL.createObjectURL(response.data);
 };
 
+export const addLithology = async (data) => {
+  return (await reqApi(`/geo/lithology/add`, data, "POST")).data;
+};
 
+export const getLithology = async (well_number) => {
+  return (await reqApi(`/geo/${well_number}/lithology`)).data;
+};

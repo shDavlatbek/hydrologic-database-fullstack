@@ -14,7 +14,7 @@ import io
 from api.dependencies import UOWDep
 from prediction.predictor import predict
 from services.geo import GeoService, ParameterService, ParameterNameService
-from schemas.geo import AddGeoWell, Parameter, ParameterCalculations, ParameterQuery, ParameterAdd
+from schemas.geo import AddGeoWell, LithologyAdd, Parameter, ParameterCalculations, ParameterQuery, ParameterAdd
 from typing import Annotated, Optional
 from dateutil.relativedelta import relativedelta
 
@@ -370,3 +370,21 @@ async def edit_well(
     user=Depends(fastapi_users.current_user(active=True))
 ):
     return await GeoService().edit_well(uow, number, geo_well)
+
+
+@router.post("/lithology/add")
+async def add_lithology(
+    uow: UOWDep,
+    lithology: LithologyAdd,
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    return await GeoService().add_lithology(uow, lithology)
+
+
+@router.get("/{well}/lithology")
+async def get_lithology(
+    uow: UOWDep,
+    well: int,
+    user=Depends(fastapi_users.current_user(active=True))
+):
+    return await GeoService().get_lithology(uow, int(well))

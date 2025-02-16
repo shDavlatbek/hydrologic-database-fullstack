@@ -1,4 +1,4 @@
-from models.geo import GeoWell, WellType, Organization, Station, Parameter, ParameterName
+from models.geo import GeoWell, WellType, Organization, Station, Parameter, ParameterName, Lithology
 from utils.repository import SQLAlchemyRepository
 
 
@@ -24,3 +24,7 @@ class ParameterNameRepository(SQLAlchemyRepository):
 
 class ParameterRepository(SQLAlchemyRepository):
     model = Parameter
+    
+    
+class LithologyRepository(SQLAlchemyRepository):
+    model = Lithology

@@ -1,10 +1,10 @@
 from datetime import datetime
-from sqlalchemy import Boolean, ForeignKey, String, DateTime, func
+from sqlalchemy import Boolean, ForeignKey, String, DateTime, func, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.db import Base
 from schemas.common import NameField
-from schemas.geo import GeoWell, Parameter
+from schemas.geo import GeoWell, Parameter, Lithology
 
 
 class Organization(Base):
@@ -64,3 +64,10 @@ class Parameter(Base):
     parameter_name: Mapped[int] = mapped_column(ForeignKey('parameter_name.id'), nullable=False)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     value: Mapped[float] = mapped_column(nullable=True)
+    
+
+class Lithology(Base):
+    __tablename__ = "lithology"
+    pydantic_model = Lithology
+    well: Mapped[int] = mapped_column(ForeignKey('geo_well.number'), nullable=False)
+    lithology: Mapped[str] = mapped_column(Text, nullable=True)

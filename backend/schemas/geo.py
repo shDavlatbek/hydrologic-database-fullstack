@@ -98,3 +98,13 @@ class ParameterCalculations(BaseModel):
 
         return data
 
+
+class LithologyAdd(BaseModel):
+    well: int
+    lithology: str
+    
+    class Config:
+        from_attributes = True
+
+class Lithology(LithologyAdd):
+    id: int

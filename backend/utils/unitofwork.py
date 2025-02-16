@@ -6,7 +6,7 @@ from repositories.common import RegionRepository, DistrictRepository, LocationRe
 from repositories.geo import \
     GeoStationRepository, GeoWellRepository, \
     GeoOrganizationRepository, GeoWellTypeRepository, \
-    ParameterNameRepository, ParameterRepository
+    ParameterNameRepository, ParameterRepository, LithologyRepository
 import repositories.melio as melio
 
 # https://github1s.com/cosmicpython/code/tree/chapter_06_uow
@@ -22,6 +22,7 @@ class IUnitOfWork(ABC):
     geo_organization: Type[GeoOrganizationRepository]
     geo_well_type: Type[GeoWellTypeRepository]
     geo_station: Type[GeoStationRepository]
+    lithology: Type[LithologyRepository]
     
     melio_well: Type[melio.MelioWellRepository]
     melio_well_type: Type[melio.MelioWellTypeRepository]
@@ -69,7 +70,8 @@ class UnitOfWork:
         self.geo_organization = GeoOrganizationRepository(self.session)
         self.geo_well_type = GeoWellTypeRepository(self.session)
         self.geo_station = GeoStationRepository(self.session) 
-        
+        self.lithology = LithologyRepository(self.session)
+
         # Melio
         self.melio_well = melio.MelioWellRepository(self.session)
         self.melio_well_type = melio.MelioWellTypeRepository(self.session)

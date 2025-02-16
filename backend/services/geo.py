@@ -2,7 +2,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import and_, extract, select
 from schemas.common import NameFieldAdd
-from schemas.geo import AddGeoWell, Parameter, ParameterQuery
+from schemas.geo import AddGeoWell, LithologyAdd, Parameter, ParameterQuery
 from utils.unitofwork import IUnitOfWork
 from models.geo import Parameter as ParameterModel
 
@@ -59,7 +59,19 @@ class GeoService:
             await uow.geo_well.edit_one(well_dict, number=well_number)
             await uow.commit()
             
+    async def add_lithology(self, uow: IUnitOfWork, lithology: LithologyAdd):
+        async with uow:
+            lithology_obj = await uow.lithology.find_one(well=lithology.well)
+            if lithology_obj:
+                await uow.lithology.edit_one(lithology.model_dump(), well=lithology.well)
+            else:
+                await uow.lithology.add_one(lithology.model_dump())
+            await uow.commit()
             
+    async def get_lithology(self, uow: IUnitOfWork, well_number: int):
+        async with uow:
+            return await uow.lithology.find_one(well=well_number)
+
 class ParameterNameService:
     async def add_parameter(self, uow: IUnitOfWork, parameter_name: NameFieldAdd):
         parameter_dict = parameter_name.model_dump()

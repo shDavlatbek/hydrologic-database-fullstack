@@ -9,12 +9,12 @@
             <div class="card rounded-2 h-100 mb-0 overflow-hidden">
               <div class="card-body d-flex flex-column">
                 <!-- Well selection -->
-                <div class="row mb-3">
+                <form class="row mb-3" @submit.prevent="formHandler">
                   <label for="id_well" class="col-sm-6 col-form-label">
                     Kuzatuv-burg'u qudug'i raqami
                   </label>
                   <div class="col-sm-6 d-flex align-items-center">
-                    <select class="form-control well_select" id="id_well" name="well" required>
+                    <select class="form-control well_select" name="well" required @change="fetchLithology" v-model="wellNumber">
                       <option value="-1">---------</option>
                       <option
                         v-for="well in wellsData"
@@ -24,8 +24,11 @@
                         {{ well.number }}
                       </option>
                     </select>
+                    <button class="btn btn-primary ms-2 btn-icon" type="submit">
+                      <IconDeviceFloppy />
+                    </button>
                   </div>
-                </div>
+                </form>
 
                 <!-- Buttons and well height (hidden) -->
                 <div class="mb-3 w-100 d-flex">
@@ -169,54 +172,31 @@
   
   <script>
   import ModalAlert from '@/components/ModalAlert.vue';
-  import { getDistricts, getRegions } from '@/api/common';
-  import { addNewWell, getNewWellForm, getWells } from '@/api/geo';
+  import { getWells, addLithology, getLithology } from '@/api/geo';
   import { ref } from 'vue';
   import domtoimg from '@/assets/js/dom-to-img.js';
   import LithologyElementsSVG from '@/lithology/LithologyElementsSVG.vue';
   import { lithologyElements } from '@/lithology/elements';
-  import { IconTrash, IconPlus } from '@tabler/icons-vue';
+  import { IconTrash, IconPlus, IconDeviceFloppy } from '@tabler/icons-vue';
 
   export default {
     components: {
       ModalAlert,
       LithologyElementsSVG,
       IconTrash,
-      IconPlus
+      IconPlus,
+      IconDeviceFloppy
     },
     data() {
       return {
-        title: "Gidrogeologik ma'lumotlar",
-        modalId: "hydrogeologic-modal",
-        addWellForm: {
-          number: null,
-          region: null,
-          district: null,
-          address: null,
-          well_type: null,
-          organization: null,
-          location: null,
-          station: null,
-          x: null,
-          y: null
-        },
-        formLoaded: false,
-        wellTypes: {},
-        organizations: {},
-        locations: {},
-        stations: {},
-        regions: {},
-        districts: {},
         wells: {},
         modalOnCloseFunc: null,
-        list: null,
-        searchQuery: '',
         modalType: null,
         modalDesc: '',
         modalTitle: '',
         noInfoMessage: '------',
         lithologyElements: lithologyElements,
-
+        wellNumber: '',
 
         // LITHOLOGY DRAW
         wellHeight: 100,
@@ -246,40 +226,22 @@
     },
     setup() {
       const modalAlert = ref();
-      const modalForm = ref();
       return {
-        modalAlert, modalForm
+        modalAlert
       }
     },
     methods: {
-      async changeDistricts(event) {
-        try {
-          this.districts = await getDistricts(event.target.value);
-        } catch (error) {
-          this.modalAlert.openModal();
-          this.modalTitle = "Tumanlarni yuklashda xatolik yuzaga keldi";
-          this.modalDesc = `Xato xabari: ${error.message}`;
-          this.modalType = 'danger';
-        }
-      },
       async formHandler() {
-        console.log("Form submitted");
+        
         try {
-          await addNewWell(JSON.stringify(this.addWellForm));
-          this.modalForm.resetForm();
-          this.modalForm.closeModal();
-          this.modalAlert.openModal();
-          this.modalTitle = "Ma'lumotlar muvaffaqiyatli qo'shildi";
-          this.modalDesc = ""
-          this.modalType = 'success';
-          setTimeout(() => {
-            this.$router.go();
-          }, 2000);
-          this.modalOnCloseFunc = () => {this.$router.go();};
+          await addLithology({
+            well: this.wellNumber,
+            lithology: JSON.stringify(this.intervals)
+          });
+          
+         
         } catch (error) {
           console.log(error);
-          this.modalForm.resetForm();
-          this.modalForm.closeModal();
           this.modalAlert.openModal();
           this.modalTitle = "Ma'lumotlarni saqlashda xatolik yuzaga keldi";
           this.modalDesc = `Xato xabari: ${error?.message}<br>Url: ${error?.config?.url}`;
@@ -302,31 +264,6 @@
             console.error('Error capturing element:', error);
           });
       },
-      async loadForm() {
-        if (this.formLoaded) {
-          return;
-        } else {
-          try {
-            this.regions = await getRegions();
-            const response = await getNewWellForm();
-            this.wellTypes = response.well_types;
-            this.organizations = response.organizations;
-            this.locations = response.locations;
-            this.stations = response.stations;
-          } catch (error) {
-            console.log(error);
-            this.modalTitle = "Ma'lumotlarni yuklashda xatolik yuzaga keldi";
-            this.modalAlert.openModal();
-            this.modalDesc = `Xato xabari: ${error.message}<br>Url: ${error.config.url}`;
-            this.modalType = 'danger';
-            this.modalOnCloseFunc = () => {};
-          }
-        }
-      },
-      navigateToGeoSingle(item) {
-        this.$router.push({ name: "GeoSingle", params: { number: item.number } });
-      },
-
 
       // LITHOLOGY DRAW
       addInterval() {
@@ -343,6 +280,9 @@
       removeInterval(index) {
         this.intervals.splice(index, 1);
         this.drawWell();
+      },
+      async fetchLithology(event) {
+        this.intervals = JSON.parse((await getLithology(event.target.value))?.lithology || '[]');
       },
       // Draws (or redraws) the well SVG based on the well height and current intervals
       drawWell() {
