@@ -11,7 +11,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3331", "https://hydrologic-database.uz/"],  # "*" allows all origins
+    allow_origins=["http://localhost:3000", "http://localhost:3331", "https://hydrologic-database.uz/", "http://localhost:8199"],  # "*" allows all origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
