@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "../views/LoginView.vue";
-import HomeView from "../views/HomeView.vue";
+import { getMe } from "@/api/auth";
+import { store } from "@/store";
+import Login from "@/views/LoginView.vue";
+import HomeView from "@/views/HomeView.vue";
 import PageNotFound from "@/layout/PageNotFound.vue";
 import ServerError from "@/layout/ServerError.vue";
 
@@ -20,6 +22,29 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+  if (to.meta.auth) {
+    try {
+      // If user is already in the store, you may want to skip the API call
+      if (!store.user.name) {
+        const response = await getMe();
+        store.user.name = response.full_name;
+      }
+      next();
+    } catch (error) {
+      // Redirect if unauthorized or any other error occurs
+      if (error.response && error.response.status === 401) {
+        if (to.path !== '/login') {
+          return next('/login');
+        }
+      }
+      return next('/500');
+    }
+  } else {
+    next();
+  }
 });
 
 export default router;
